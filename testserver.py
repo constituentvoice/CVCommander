@@ -12,4 +12,4 @@ def slash(_file=None):
     return render_template(_file)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host="0.0.0.0")

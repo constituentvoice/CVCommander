@@ -49,25 +49,21 @@
 
 			button.click( function(e) {
 				e.preventDefault();
-				self.list();
+				self.open_browser();
 			});
 
 			this.$elem.after( button );
 		},
 		list:function(folder) {
-			if( !this.frame ) {
-				this.frame = this.open_browser();
-			}
-			
-			var listframe = this.frame.find('#cvclistview');
-			console.log(listframe);
-			/*$.each([
+			var listpane = this.frame.find('#cvclistview');
+			console.log(listpane);
+			$.each([
 				{'type':'application/pdf', 'name':'test.pdf'},
 				{'type':'image/png', 'name':'foo.png'},
 				{'type':'image/jpeg','name':'photo.jpg'},
 				], function(idx,obj) {
-					this.frame.children('#cvclistview').append('<div><i class="fa fa-file"></i> ' + obj.name + '</div>');
-				});*/
+					listpane.append('<div><i class="fa fa-file"></i> ' + obj.name + '</div>');
+				});
 
 		},
 		upload:function(obj, folder) {
@@ -90,7 +86,8 @@
 				frame.close( function() {
 					self.frame = null;
 				});
-				return frame.document.$('body');
+				this.frame = frame.document.$('body');
+				this.list();
 			}
 			else {
 				frame = $('<div />');
@@ -127,9 +124,10 @@
 						self.frame = null;
 						frame.remove();
 					});
+					self.frame = frame;
+					self.list()
 				});
 				
-				return frame;
 			}
 		},
 	};
