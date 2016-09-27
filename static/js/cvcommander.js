@@ -124,6 +124,7 @@
 						self.frame = null;
 						frame.remove();
 					});
+					$('#cvcupload').dropzone({url:self.options.upload_url});
 					self.frame = frame;
 					self.list()
 				});
