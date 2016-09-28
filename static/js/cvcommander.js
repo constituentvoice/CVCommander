@@ -130,15 +130,15 @@
 							console.log('woot!');
 							try {
 								console.log(self.options.upload_url);
-								$('#cvcupload').dropzone({url:self.options.upload_url});
+								$('#cvcuploaddz').dropzone({
+									url:self.options.upload_url,
+									uploadMultiple: true,
+								});
 							}
 							catch(e) {
 								// do nothing. Already attached. Shouldn't happen
 								console.log('attached?');
 							}
-						}
-						else {
-							console.log(target);
 						}
 					});
 					self.frame = frame;
