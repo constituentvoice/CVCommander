@@ -56,7 +56,6 @@
 		},
 		list:function(folder) {
 			var listpane = this.frame.find('#cvclistview');
-			console.log(listpane);
 			$.each([
 				{'type':'application/pdf', 'name':'test.pdf'},
 				{'type':'image/png', 'name':'foo.png'},
@@ -124,7 +123,24 @@
 						self.frame = null;
 						frame.remove();
 					});
-					$('#cvcupload').dropzone({url:self.options.upload_url});
+					
+					$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+						var target = $(e.target).attr("href");
+						if( target == '#cvcupload' ) {
+							console.log('woot!');
+							try {
+								console.log(self.options.upload_url);
+								$('#cvcupload').dropzone({url:self.options.upload_url});
+							}
+							catch(e) {
+								// do nothing. Already attached. Shouldn't happen
+								console.log('attached?');
+							}
+						}
+						else {
+							console.log(target);
+						}
+					});
 					self.frame = frame;
 					self.list()
 				});
