@@ -3,8 +3,8 @@
 		defaults = {
 			width: 600,
 			height: 400,
-			upload_url: '/upload',
-			list_files_url: '/files',
+			upload_url: '/cvc/upload',
+			list_files_url: '/cvc/list',
 			path: '/',
 			modal: true,
 			modal_css: null,

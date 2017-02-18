@@ -1,8 +1,11 @@
 from __future__ import absolute_import
 
 from flask import Flask, request, g, redirect,render_template
+from connectors.cvcommander import cvc
 
 app = Flask(__name__,static_folder='static', template_folder='html')
+
+app.register_blueprint(cvc, url_prefix='/cvc')
 
 @app.route('/<_file>')
 @app.route('/')
