@@ -133,6 +133,14 @@
 								$('#cvcuploaddz').dropzone({
 									url:self.options.upload_url,
 									uploadMultiple: true,
+									init: function() {
+										var dz = this;
+										this.on("successmultiple", function() {
+											dz.removeAllFiles();
+											self.list();
+											$('#browsetab').click();
+										})
+									}
 								});
 							}
 							catch(e) {
