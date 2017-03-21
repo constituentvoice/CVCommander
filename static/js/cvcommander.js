@@ -11,7 +11,8 @@
 			button_class: 'btn',
 			button_text: '',
 			use_fa: true,
-			fa_classes: 'fa-camera'
+			fa_classes: 'fa-camera',
+			file_error_timeout: 10
 		};
 
 	var cvCommander = function ( element, config ) {
@@ -25,6 +26,11 @@
 	cvCommander.prototype = {
 		init: function() {
 			this.options = $.extend( {}, defaults, this.config );
+			
+			if( this.options.file_error_timeout > -1 ) {
+				this.options.file_error_timeout *= 1000;
+			}
+
 			this.$elem = $(this.element);
 			this.frame = null;
 			
@@ -136,10 +142,28 @@
 									init: function() {
 										var dz = this;
 										this.on("successmultiple", function() {
-											dz.removeAllFiles();
+											//dz.removeAllFiles();
 											self.list();
 											$('#browsetab').click();
+										}),
+										this.on('cancelmultiple', function() {
+											dz.removeAllFiles();
+										}),
+										this.on('completemultiple', function() {
+											if(!dz.is_error) {
+												dz.removeAllFiles();
+											}
+										}),
+										this.on('error', function(f, error, xhr) {
+											// TODO, error on types
+											dz.is_error = true;
+											console.log(f);
+											$(f.previewElement).find('.dz-error-message').text('Upload failed.');
+											if( self.options.file_error_timeout > -1 ) {
+												setTimeout( dz.removeFile, self.config.file_error_timeout, f )
+											}
 										})
+
 									}
 								});
 							}
