@@ -20,14 +20,17 @@ def list_files():
 
 @cvc.route( '/upload', methods=['POST'])
 def upload_file():
-    for k in request.files.keys():
-        f = request.files.get(k)
+    try:
+        for k in request.files.keys():
+            f = request.files.get(k)
 
-        if not f or f.filename == '':
-            continue
+            if not f or f.filename == '':
+                continue
 
-        filename = secure_filename(f.filename)
-        f.save( os.path.join('static','uploads',filename) )
+            filename = secure_filename(f.filename)
+            f.save( os.path.join('static','uploads',filename) )
+    except:
+        return "There was a problem uploading the file", 400
 
 
     return "OK"

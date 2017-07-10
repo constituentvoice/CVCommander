@@ -127,12 +127,12 @@
 					$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
 						var target = $(e.target).attr("href");
 						if( target == '#cvcupload' ) {
-							console.log('woot!');
 							try {
 								console.log(self.options.upload_url);
 								$('#cvcuploaddz').dropzone({
 									url:self.options.upload_url,
 									uploadMultiple: true,
+
 								});
 							}
 							catch(e) {
