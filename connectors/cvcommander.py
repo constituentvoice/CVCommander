@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from werkzeug.utils import secure_filename
+from traceback import format_exc
 
 
 import os
@@ -30,6 +31,7 @@ def upload_file():
             filename = secure_filename(f.filename)
             f.save( os.path.join('static','uploads',filename) )
     except:
+        print format_exc()
         return "There was a problem uploading the file", 400
 
 

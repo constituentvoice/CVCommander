@@ -4,6 +4,7 @@
 			width: 600,
 			height: 400,
 			upload_url: '/cvc/upload',
+			upload_field: 'uploads',
 			list_files_url: '/cvc/list',
 			path: '/',
 			modal: true,
@@ -11,7 +12,8 @@
 			button_class: 'btn',
 			button_text: '',
 			use_fa: true,
-			fa_classes: 'fa-camera'
+			fa_classes: 'fa-camera',
+			error: function(msg) { console.log(msg); }
 		};
 
 	var cvCommander = function ( element, config ) {
@@ -65,7 +67,58 @@
 				});
 
 		},
-		upload:function(obj, folder) {
+		progress:function(percent) {
+			$('#cvcprogress').find('.progress-bar').attr('aria-valuenow',percent);
+			$('#cvcprogress').find('.progress-bar').css('width',percent + '%');
+		},
+		upload:function( files ) {
+			var self = this;
+
+			if(files.length < 1) {
+				return self.options.error('No files were selected for upload');
+			}
+
+			var fd = new FormData();
+			var total_size = 0;
+			$.each(files, function(idx, f) {
+				fd.append( self.upload_field, f )
+				total_size += f.size;
+			});
+
+			$('#cvcdropmessage').hide();
+			$('#cvcprogress').show();
+			console.log(fd);
+			$.ajax( {
+				xhr: function() {
+					var xhrobj = $.ajaxSettings.xhr();
+					if( xhrobj.upload ) {
+						xhrobj.upload.addEventListener('progress', function(e) {
+							var pos = e.loaded || e.position;
+							var percent = 0;
+							try {
+								percent = Math.ceil(pos / total_size * 100);
+							}
+							catch(exc) {
+							}
+							self.progress(percent);
+						}, false);
+					}
+					return xhrobj;
+				},
+				url: self.options.upload_url,
+				type: 'POST',
+				contentType: false,
+				processData: false,
+				data: fd,
+				success: function(data) {
+					$('#cvcdropmessage').show();
+					$('#cvcprogress').hide();
+					$('a[href="#cvclistview"]').click();
+				},
+				error: function(jqXHR,txtstatus,err) {
+					self.options.error(txtstatus);
+				}
+			})
 		},
 		copy: function(obj, file, dest) {
 		},
@@ -123,24 +176,59 @@
 						self.frame = null;
 						frame.remove();
 					});
-					
-					$('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
-						var target = $(e.target).attr("href");
-						if( target == '#cvcupload' ) {
-							try {
-								console.log(self.options.upload_url);
-								$('#cvcuploaddz').dropzone({
-									url:self.options.upload_url,
-									uploadMultiple: true,
 
-								});
-							}
-							catch(e) {
-								// do nothing. Already attached. Shouldn't happen
-								console.log('attached?');
-							}
+					var _clean_event = function(e) {
+						e.stopPropagation();
+						e.preventDefault();
+					}
+
+					$(document).on('dragenter', function(e) {
+						_clean_event(e);
+					});
+					$(document).on('dragover', function(e) {
+						_clean_event(e);
+					});
+
+					$(document).on('dragenter','#cvclistview', function(e) {
+						_clean_event(e);
+						$('a[href="#cvcupload"]').click(); // ugly hack
+						self.back_to_list = true;
+					});
+
+					/*$(document).on('dragleave','#cvcupload', function(e) {
+						$('a[href="#cvclistview"]').click();
+					});*/
+
+					/*$(document).on('dragover','#cvclistview', function(e) {
+						_clean_event(e);
+						$('#cvcupload').tab('show');
+					});*/
+
+					$(document).on('dragenter','#cvcupload',function(e) {
+						$('#cvcupload').removeClass('text-muted');
+						_clean_event(e);
+					});
+
+					$(document).on('dragover','#cvcupload',function(e) {
+						$('#cvcupload').removeClass('text-muted');
+						_clean_event(e);
+					});
+
+					$(document).on('dragleave','#cvcupload',function(e) {
+						$('#cvcupload').addClass('text-muted');
+						if( self.back_to_list ) {
+							$('a[href="#cvclistview"]').click();
 						}
 					});
+
+					$(document).on('drop','#cvcupload',function(e) {
+						console.log('DROP!')
+						e.preventDefault();
+						$('#cvcupload').addClass('text-muted');
+						var files = e.originalEvent.dataTransfer.files;
+						self.upload( files );
+					});
+
 					self.frame = frame;
 					self.list()
 				});

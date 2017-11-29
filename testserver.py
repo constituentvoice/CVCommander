@@ -12,6 +12,10 @@ app.register_blueprint(cvc, url_prefix='/cvc')
 def slash(_file=None):
     if not _file:
         _file = 'test.html'
+
+    if _file == 'favicon.ico':
+        return 'NOT FOUND',404
+
     return render_template(_file)
 
 if __name__ == '__main__':
