@@ -7,6 +7,10 @@ app = Flask(__name__,static_folder='static', template_folder='html')
 
 app.register_blueprint(cvc, url_prefix='/cvc')
 
+@app.route('/favicon.ico')
+def fav():
+    return '', 404
+
 @app.route('/<_file>')
 @app.route('/')
 def slash(_file=None):

@@ -14,6 +14,7 @@
 			use_fa: true,
 			fa_classes: 'fa-camera',
 			error: function(msg) { console.log(msg); }
+			file_error_timeout: 10
 		};
 
 	var cvCommander = function ( element, config ) {
@@ -27,6 +28,11 @@
 	cvCommander.prototype = {
 		init: function() {
 			this.options = $.extend( {}, defaults, this.config );
+			
+			if( this.options.file_error_timeout > -1 ) {
+				this.options.file_error_timeout *= 1000;
+			}
+
 			this.$elem = $(this.element);
 			this.frame = null;
 			
