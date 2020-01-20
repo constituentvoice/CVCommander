@@ -13,17 +13,36 @@
 			button_text: '',
 			use_fa: true,
 			fa_classes: 'fa-camera',
-			error: function(msg) { console.log(msg); }
-			file_error_timeout: 10
+			error: function(msg) { console.log(msg); },
+			file_error_timeout: 10,
+			icons: {
+				'application/postscript': 'file-pdf-o',
+				'application/pdf': 'file-pdf-o',
+				'application/msword': 'file-word-o',
+				'application/.*excel': 'file-excel-o',
+				'application/.*powerpoint': 'file-powerpoint-o',
+				'text/plain': 'file-text-o',
+				'text/html': 'file-code-o',
+				'^[^\/]+\/.*(zip|compressed).*': 'file-archive-o',
+				'image/png': 'self',
+				'image/x-png': 'self',
+				'image/gif': 'self',
+				'image/jpeg': 'self',
+				'image/tiff': 'self',
+				'^image\/': 'file-image-o',
+				'^video\/': 'file-video-o',
+				'^audio\/': 'file-audio-o',
+				'dir': 'folder'
+			}
 		};
 
 	var cvCommander = function ( element, config ) {
-		this.element = element,
+		this.element = element;
 		this._defaults = defaults;
 		this._name = plugin_name;
 		this.config = config;
 
-	}
+	};
 
 	cvCommander.prototype = {
 		init: function() {
@@ -36,11 +55,11 @@
 			this.$elem = $(this.element);
 			this.frame = null;
 			
-			var button = $('<button />')
+			var button = $('<button />');
 			button.attr('type', "button");
-			button.attr('class', this.options.button_class)
+			button.addClass(this.options.button_class);
 			
-			_markup = '';
+			var _markup = '';
 			if( this.options.use_fa ) {
 				_markup += '<i class="fa ' + this.options.fa_classes + '"></i>';
 				if( this.options.button_text ) {
@@ -62,19 +81,42 @@
 
 			this.$elem.after( button );
 		},
-		list:function(folder) {
+		parse_icon: function(icon_data) {
+			var icon_out = '';
+			var self = this;
+			$.each(self.options.icons, function(rule, icon_name) {
+				var rrule = new RegExp(rule);
+				console.log(rule);
+				if(icon_data.type.match(rrule) || icon_data.type == rule) {
+					if(icon_name == 'self') {
+						icon_out = '<img src="' + icon_data.url + '" style="max-width:2em; max-height:2em;" align="left"> ';
+					}
+					else {
+						icon_out = '<i class="fa fa-' + icon_name +'"></i> ';
+					}
+					return false;
+				}
+			});
+			if(!icon_out) {
+				icon_out = '<i class="fa fa-file-o"></i>';
+			}
+			return icon_out;
+		},
+		list:function(folder, refresh) {
+			var self = this;
 			var listpane = this.frame.find('#cvclistview');
-			$.each([
-				{'type':'application/pdf', 'name':'test.pdf'},
-				{'type':'image/png', 'name':'foo.png'},
-				{'type':'image/jpeg','name':'photo.jpg'},
-				], function(idx,obj) {
-					listpane.append('<div><i class="fa fa-file"></i> ' + obj.name + '</div>');
+			if(refresh) {
+				listpane.html('');
+			}
+			$.getJSON(self.options.list_files_url, function(resp) {
+				$.each(resp.files, function(idx, obj) {
+					var icon_markup = self.parse_icon(obj);
+					listpane.append('<div style="clear:both; padding-top: 2px;">' + icon_markup + obj.name + '</div>');
 				});
-
+			});
 		},
 		progress:function(percent) {
-			$('#cvcprogress').find('.progress-bar').attr('aria-valuenow',percent);
+			$('#cvcprogress').find('.progress-bar').attr('aria-valuenow', percent);
 			$('#cvcprogress').find('.progress-bar').css('width',percent + '%');
 		},
 		upload:function( files ) {
@@ -119,9 +161,10 @@
 				success: function(data) {
 					$('#cvcdropmessage').show();
 					$('#cvcprogress').hide();
+					self.list('/', true);
 					$('a[href="#cvclistview"]').click();
 				},
-				error: function(jqXHR,txtstatus,err) {
+				error: function(jqXHR,txtstatus, err) {
 					self.options.error(txtstatus);
 				}
 			})
@@ -145,15 +188,16 @@
 					self.frame = null;
 				});
 				this.frame = frame.document.$('body');
-				this.list();
+				this.list('/', true);
 			}
 			else {
 				frame = $('<div />');
+				var _top_percent = null;
 				try {
-					var _top_percent = (this.options.height / window.innerHeight) * 25;
+					_top_percent = (this.options.height / window.innerHeight) * 25;
 				}
 				catch(exception) {
-					var _top_percent = 30; // probably a divide by zero. Set to 30%
+					_top_percent = 30; // probably a divide by zero. Set to 30%
 				}
 
 				frame.css({
@@ -165,7 +209,7 @@
 				});
 				
 				frame.load( '/cvcommander.html', function(resp,_status,xhr) {
-					$(document.body).append(this)
+					$(document.body).append(this);
 					$('#cvc-container').css({
 						'padding-top': '8px',
 						'width': self.options.width + 'px',
@@ -228,7 +272,7 @@
 					});
 
 					$(document).on('drop','#cvcupload',function(e) {
-						console.log('DROP!')
+						console.log('DROP!');
 						e.preventDefault();
 						$('#cvcupload').addClass('text-muted');
 						var files = e.originalEvent.dataTransfer.files;
@@ -236,7 +280,7 @@
 					});
 
 					self.frame = frame;
-					self.list()
+					self.list('/', true)
 				});
 				
 			}
