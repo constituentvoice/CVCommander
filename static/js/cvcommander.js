@@ -9,7 +9,7 @@
 			path: '/',
 			modal: true,
 			modal_css: null,
-			button_class: 'btn',
+			button_class: 'btn btn-default',
 			button_text: '',
 			use_fa: true,
 			fa_classes: 'fa-camera',
@@ -54,7 +54,8 @@
 
 			this.$elem = $(this.element);
 			this.frame = null;
-			
+			this.$elem.wrap('<div class="input-group">');
+
 			var button = $('<button />');
 			button.attr('type', "button");
 			button.addClass(this.options.button_class);
@@ -78,8 +79,8 @@
 				e.preventDefault();
 				self.open_browser();
 			});
-
-			this.$elem.after( button );
+			button.wrap('<span class="input-group-btn">');
+			this.$elem.after( button.parent() );
 		},
 		parse_icon: function(icon_data) {
 			var icon_out = '';
