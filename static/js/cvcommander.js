@@ -105,7 +105,7 @@
 		},
 		list:function(folder, refresh) {
 			var self = this;
-			var listpane = this.frame.find('#cvclistview');
+			var listpane = this.frame.find('#cvclistcontent');
 			if(refresh) {
 				listpane.html('');
 			}
@@ -192,41 +192,10 @@
 				this.list('/', true);
 			}
 			else {
-				frame = $('<div />');
-				var _top_percent = null;
-				try {
-					_top_percent = (this.options.height / window.innerHeight) * 25;
-				}
-				catch(exception) {
-					_top_percent = 30; // probably a divide by zero. Set to 30%
-				}
+				frame = $('<div id="cvcframe" />');
 
-				frame.css({
-					'display':'block',
-					'position':'fixed',
-					'top': _top_percent.toString() + '%',
-					'width': '100%' ,
-					'height': this.options.height,
-				});
-				
 				frame.load( '/cvcommander.html', function(resp,_status,xhr) {
 					$(document.body).append(this);
-					$('#cvc-container').css({
-						'padding-top': '8px',
-						'width': self.options.width + 'px',
-						'height': self.options.height + 'px',
-						'margin': '0 auto',
-						'overflow': 'auto',
-						'border': '1px solid #ccc',
-						'border-radius': '8px',
-						'box-shadow': '8px 8px 8px #ccc',
-						'background-color': 'white'
-					});
-					$('.cvcclose').click(function(e) {
-						e.preventDefault();
-						self.frame = null;
-						frame.remove();
-					});
 
 					var _clean_event = function(e) {
 						e.stopPropagation();
@@ -280,6 +249,7 @@
 						self.upload( files );
 					});
 
+					$('#cvc-container').modal('show');
 					self.frame = frame;
 					self.list('/', true)
 				});
