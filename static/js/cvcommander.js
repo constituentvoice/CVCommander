@@ -24,11 +24,11 @@
 				'text/plain': 'file-text-o',
 				'text/html': 'file-code-o',
 				'^[^\/]+\/.*(zip|compressed).*': 'file-archive-o',
-				'image/png': 'self',
-				'image/x-png': 'self',
-				'image/gif': 'self',
-				'image/jpeg': 'self',
-				'image/tiff': 'self',
+				'image/png': ['self', 'file-image-o'],
+				'image/x-png': ['self', 'file-image-o'],
+				'image/gif': ['self', 'file-image-o'],
+				'image/jpeg': ['self', 'file-image-o'],
+				'image/tiff': ['self', 'file-image-o'],
 				'^image\/': 'file-image-o',
 				'^video\/': 'file-video-o',
 				'^audio\/': 'file-audio-o',
@@ -82,36 +82,83 @@
 			button.wrap('<span class="input-group-btn">');
 			this.$elem.after( button.parent() );
 		},
-		parse_icon: function(icon_data) {
+		human_size: function(bytes, iter) {
+			var labels = ['B', 'K', 'M', 'G'];
+			if(!iter) {
+				iter = 0;
+			}
+			if(iter >= labels.length) {
+				iter = labels.length - 1;
+			}
+			if(bytes < 1024 || iter >= labels.length) {
+				return bytes + ' ' + labels[iter];
+			}
+			else {
+				bytes = Math.round(bytes / 1024);
+				return self.human_size(bytes, iter++);
+			}
+		},
+		create_icon: function(icon_data, view_type) {
 			var icon_out = '';
+			if(!view_type) {
+				view_type = 'icons';
+			}
 			var self = this;
 			$.each(self.options.icons, function(rule, icon_name) {
 				var rrule = new RegExp(rule);
 				console.log(rule);
-				if(icon_data.type.match(rrule) || icon_data.type == rule) {
-					if(icon_name == 'self') {
-						icon_out = '<img src="' + icon_data.url + '" style="max-width:2em; max-height:2em;" align="left"> ';
+				if(icon_data.type.match(rrule) || icon_data.type === rule) {
+					var icon_lg = icon_name;
+					var icon_sm = icon_name;
+					if(Array.isArray(icon_name)) {
+						icon_lg = icon_name[0];
+						icon_sm = icon_name[1];
+					}
+					if(icon_lg === 'self' && view_type === 'icons') {
+						icon_out = '<div class="col-md-1 text-center"><img src="' + icon_data.url + '" style="max-width:8em; max-height:8em;" align="center">';
+						icon_out += '<br>' + icon_data.name + '</div>';
 					}
 					else {
-						icon_out = '<i class="fa fa-' + icon_name +'"></i> ';
+						if(view_type === 'icons') {
+							icon_out = '<div class="col-md-1 text-center"><i class="fa fa-3x fa-' + icon_lg + '"></i><br>';
+							icon_out += icon_data.name + '</div>'
+						}
+						else {
+							icon_out = '<tr><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
+							icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
+							icon_out += '<td data-sort="'+ icon_data.size + '">' + self.humansize(icon_data.size) + '</td></tr>';
+						}
 					}
 					return false;
 				}
 			});
 			if(!icon_out) {
-				icon_out = '<i class="fa fa-file-o"></i>';
+				if(view_type == 'icons') {
+					icon_out = '<div class="col-md-1 text-center"><i class="fa fa-3x fa-file-o"></i><br>';
+					icon_out += icon_data.name + '</div>'
+				}
+				else {
+					icon_out = '<tr><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
+					icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
+					icon_out += '<td data-sort="'+ icon_data.size + '">' + self.humansize(icon_data.size) + '</td></tr>';
+				}
 			}
 			return icon_out;
 		},
-		list:function(folder, refresh) {
+		list:function(folder, refresh, options) {
 			var self = this;
 			var listpane = this.frame.find('#cvclistcontent');
 			if(refresh) {
 				listpane.html('');
 			}
+			if(!options) {
+				options = {};
+			}
+			var viewtype = options.view || 'icons';
+
 			$.getJSON(self.options.list_files_url, function(resp) {
 				$.each(resp.files, function(idx, obj) {
-					var icon_markup = self.parse_icon(obj);
+					var icon_markup = self.create_icon(obj, viewtype);
 					listpane.append('<div style="clear:both; padding-top: 2px;">' + icon_markup + obj.name + '</div>');
 				});
 			});
@@ -165,7 +212,7 @@
 					self.list('/', true);
 					$('a[href="#cvclistview"]').click();
 				},
-				error: function(jqXHR,txtstatus, err) {
+				error: function(jqXHR, txtstatus, err) {
 					self.options.error(txtstatus);
 				}
 			})
@@ -184,7 +231,7 @@
 
 			if( !this.options.modal ) {
 				frame = window.open('/frame.html','cvcommander','width='+this.options.width+',height='+this.options.height+',menubar=no,location=no,resizable=yes,scrollbars=yes,status=no');
-				frame.document.$('body').cvcommander = this
+				frame.document.$('body').cvcommander = this;
 				frame.close( function() {
 					self.frame = null;
 				});
@@ -208,7 +255,10 @@
 					$(document).on('dragover', function(e) {
 						_clean_event(e);
 					});
-
+					$(document).on('click', '.cvview', function(e) {
+						var folder = $(this).data('folder') || '/'
+						self.list(folder, true, {view:$(this).data('view-type')})
+					});
 					$(document).on('dragenter','#cvclistview', function(e) {
 						_clean_event(e);
 						$('a[href="#cvcupload"]').click(); // ugly hack
@@ -247,6 +297,12 @@
 						$('#cvcupload').addClass('text-muted');
 						var files = e.originalEvent.dataTransfer.files;
 						self.upload( files );
+					});
+
+					// for fallback reasons
+					$(document).on('change', '#cvcuploadinput', function(e) {
+						_clean_event(e);
+						self.upload(this.files);
 					});
 
 					$('#cvc-container').modal('show');

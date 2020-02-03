@@ -18,19 +18,29 @@ tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 
 static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'static' )
 cvc = Blueprint('cvc',__name__,template_folder=tmpl_path, static_folder=static_path )
 
-@cvc.route( '/list', methods=['GET'])
+
+@cvc.route('/list', methods=['GET'])
 def list_files():
     path = request.args.get('path', '.')
     files = os.listdir(os.path.join('static', 'uploads', path))
-    files_out = [];
+    files_out = []
     for f in files:
-        mime, encoding = mimetypes.guess_type(os.path.join('static', 'uploads', f))
-        files_out.append({'type': mime, 'url': url_for('static', filename='uploads/{}'.format(f)), 'name': f})
+        f_full_path = os.path.join('static', 'uploads', f)
+        mime, encoding = mimetypes.guess_type(f_full_path)
+        size = os.path.getsize(f_full_path)
+        modified = os.path.getmtime(f_full_path)
+        files_out.append({
+            'type': mime,
+            'url': url_for('static', filename='uploads/{}'.format(f)),
+            'name': f,
+            'size': size,
+            'modified': modified
+        })
 
     return jsonify({'files': files_out})
 
 
-@cvc.route( '/upload', methods=['POST'])
+@cvc.route('/upload', methods=['POST'])
 def upload_file():
     try:
         for k in request.files.keys():
@@ -40,11 +50,10 @@ def upload_file():
                 continue
 
             filename = secure_filename(f.filename)
-            f.save( os.path.join('static','uploads',filename) )
+            f.save(os.path.join('static', 'uploads', filename))
     except:
         current_app.logger.debug(format_exc())
         return "There was a problem uploading the file", 400
-
 
     return "OK"
 
