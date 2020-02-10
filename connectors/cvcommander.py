@@ -34,7 +34,7 @@ def list_files():
             'url': url_for('static', filename='uploads/{}'.format(f)),
             'name': f,
             'size': size,
-            'modified': modified
+            'modified': int(modified)
         })
 
     return jsonify({'files': files_out})

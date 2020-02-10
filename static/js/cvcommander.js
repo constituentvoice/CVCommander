@@ -16,22 +16,24 @@
 			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
 			icons: {
-				'application/postscript': 'file-pdf-o',
-				'application/pdf': 'file-pdf-o',
-				'application/msword': 'file-word-o',
-				'application/.*excel': 'file-excel-o',
-				'application/.*powerpoint': 'file-powerpoint-o',
-				'text/plain': 'file-text-o',
-				'text/html': 'file-code-o',
-				'^[^\/]+\/.*(zip|compressed).*': 'file-archive-o',
-				'image/png': ['self', 'file-image-o'],
-				'image/x-png': ['self', 'file-image-o'],
-				'image/gif': ['self', 'file-image-o'],
-				'image/jpeg': ['self', 'file-image-o'],
-				'image/tiff': ['self', 'file-image-o'],
-				'^image\/': 'file-image-o',
-				'^video\/': 'file-video-o',
-				'^audio\/': 'file-audio-o',
+				'application/postscript': 'file-pdf',
+				'application/pdf': 'file-pdf',
+				'application/msword': 'file-word',
+				'application/.*excel': 'file-excel',
+				'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'file-excel',
+				'application/.*powerpoint': 'file-powerpoint',
+				'text/plain': 'file-alt',
+				'text/html': 'file-code',
+				'application/x-sql': 'file-code',
+				'^[^\/]+\/.*(zip|compressed).*': 'file-archive',
+				'image/png': ['self', 'file-image'],
+				'image/x-png': ['self', 'file-image'],
+				'image/gif': ['self', 'file-image'],
+				'image/jpeg': ['self', 'file-image'],
+				'image/tiff': ['self', 'file-image'],
+				'^image\/': 'file-image',
+				'^video\/': 'file-video',
+				'^audio\/': 'file-audio',
 				'dir': 'folder'
 			}
 		};
@@ -62,7 +64,7 @@
 			
 			var _markup = '';
 			if( this.options.use_fa ) {
-				_markup += '<i class="fa ' + this.options.fa_classes + '"></i>';
+				_markup += '<i class="fas ' + this.options.fa_classes + '"></i>';
 				if( this.options.button_text ) {
 					_markup += " ";
 				}
@@ -95,7 +97,7 @@
 			}
 			else {
 				bytes = Math.round(bytes / 1024);
-				return self.human_size(bytes, iter++);
+				return this.human_size(bytes, iter++);
 			}
 		},
 		create_icon: function(icon_data, view_type) {
@@ -106,7 +108,6 @@
 			var self = this;
 			$.each(self.options.icons, function(rule, icon_name) {
 				var rrule = new RegExp(rule);
-				console.log(rule);
 				if(icon_data.type.match(rrule) || icon_data.type === rule) {
 					var icon_lg = icon_name;
 					var icon_sm = icon_name;
@@ -115,18 +116,18 @@
 						icon_sm = icon_name[1];
 					}
 					if(icon_lg === 'self' && view_type === 'icons') {
-						icon_out = '<div class="col-md-1 text-center"><img src="' + icon_data.url + '" style="max-width:8em; max-height:8em;" align="center">';
+						icon_out = '<div class="col-md-3 text-center"><img src="' + icon_data.url + '" style="max-width:4em; max-height:4em;" align="center">';
 						icon_out += '<br>' + icon_data.name + '</div>';
 					}
 					else {
 						if(view_type === 'icons') {
-							icon_out = '<div class="col-md-1 text-center"><i class="fa fa-3x fa-' + icon_lg + '"></i><br>';
+							icon_out = '<div class="col-md-3 text-center"><i class="fas fa-3x fa-' + icon_lg + '"></i><br>';
 							icon_out += icon_data.name + '</div>'
 						}
 						else {
 							icon_out = '<tr><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
-							icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
-							icon_out += '<td data-sort="'+ icon_data.size + '">' + self.humansize(icon_data.size) + '</td></tr>';
+							icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment.unix(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
+							icon_out += '<td data-sort="'+ icon_data.size + '">' + self.human_size(icon_data.size) + '</td></tr>';
 						}
 					}
 					return false;
@@ -134,33 +135,72 @@
 			});
 			if(!icon_out) {
 				if(view_type == 'icons') {
-					icon_out = '<div class="col-md-1 text-center"><i class="fa fa-3x fa-file-o"></i><br>';
+					icon_out = '<div class="col-md-3 text-center"><i class="fa fa-3x fa-file-o"></i><br>';
 					icon_out += icon_data.name + '</div>'
 				}
 				else {
-					icon_out = '<tr><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
+					icon_out = '<tr><td><i class="fas fa-file-o"></i>&nbsp;' + icon_data.name + '</td>';
 					icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
-					icon_out += '<td data-sort="'+ icon_data.size + '">' + self.humansize(icon_data.size) + '</td></tr>';
+					icon_out += '<td data-sort="'+ icon_data.size + '">' + self.human_size(icon_data.size) + '</td></tr>';
 				}
 			}
 			return icon_out;
 		},
 		list:function(folder, refresh, options) {
 			var self = this;
+			options = options || {};
 			var listpane = this.frame.find('#cvclistcontent');
+			var viewtype = options.view || listpane.data('view') || 'icons';
+			if(options.view && options.view !== listpane.data('view')) {
+				refresh = true;
+			}
+
 			if(refresh) {
 				listpane.html('');
+				if(viewtype == 'icons') {
+					listpane.append('<div class="row"></div>');
+				}
+				else {
+					listpane.append('<table width="100%" class="table table-striped table-responsive"><tr><th>Name</th><th>Modified</th>' +
+						'<th>Size</th></tr>');
+				}
 			}
-			if(!options) {
-				options = {};
+
+			if(viewtype == 'icons') {
+				listpane.data('view-type', 'icons')
+				listpane = listpane.find('.row');
+
 			}
-			var viewtype = options.view || 'icons';
+			else {
+				listpane.data('view-type', 'list')
+				listpane = listpane.find('table');
+			}
+
+			$('.cvview').each(function(idx) {
+				if($(this).data('view-type') === viewtype) {
+					$(this).addClass('active');
+				}
+				else {
+					$(this).removeClass('active');
+				}
+			});
 
 			$.getJSON(self.options.list_files_url, function(resp) {
+				var ico_count = 0;
 				$.each(resp.files, function(idx, obj) {
-					var icon_markup = self.create_icon(obj, viewtype);
-					listpane.append('<div style="clear:both; padding-top: 2px;">' + icon_markup + obj.name + '</div>');
+					listpane.append(self.create_icon(obj, viewtype));
+					ico_count ++;
+					if(ico_count === 4 && viewtype === 'icons') {
+						ico_count = 0;
+						var newpane = $('<div class="row"></div>');
+						listpane.parent().append(newpane);
+						listpane = newpane;
+					}
 				});
+				// here because it needs to be after the icons load
+				if(refresh) {
+					listpane.parent().append('<div class="clearfix"></div>');
+				}
 			});
 		},
 		progress:function(percent) {
