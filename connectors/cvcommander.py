@@ -31,7 +31,7 @@ def list_files():
         modified = os.path.getmtime(f_full_path)
         files_out.append({
             'type': mime,
-            'url': url_for('static', filename='uploads/{}'.format(f)),
+            'url': url_for('static', filename='uploads/{}'.format(f), _external=True),
             'name': f,
             'size': size,
             'modified': int(modified)
@@ -43,6 +43,7 @@ def list_files():
 @cvc.route('/upload', methods=['POST'])
 def upload_file():
     try:
+        output_data = []
         for k in request.files.keys():
             f = request.files.get(k)
 
@@ -51,9 +52,9 @@ def upload_file():
 
             filename = secure_filename(f.filename)
             f.save(os.path.join('static', 'uploads', filename))
+            output_data.append(url_for('static', filename='uploads/' + filename))
+            return {'files': output_data}
     except:
         current_app.logger.debug(format_exc())
         return "There was a problem uploading the file", 400
-
-    return "OK"
 

@@ -16,6 +16,66 @@
 	text-align:center;
 	font-size: 200%;
 	border: 2px dashed #aaa;
-	padding-top: 20%;
+	padding: 20% 0;
 }
 
+.cvccontainer {
+	padding: 1rem;
+}
+
+.cvcupload-inline {
+	text-align: center;
+	border: 2px dashed #aaa;
+	padding: 1rem 0;
+}
+
+.nav-item > .nav-link.active {
+	background-color: white;
+}
+
+a.btn {
+	color: gray;
+}
+
+#cvc-container .modal-header {
+	background-color: #666666;
+	color: white;
+	padding-bottom: 0px;
+	border-bottom: 0px;
+}
+
+#cvc-container .modal-header>.nav-tabs {
+	border-bottom: 0px;
+}
+
+#cvc-container .nav-tabs li a:not(.active) {
+	background-color: #aaaaaa;
+	color: black;
+}
+
+#cvc-container {
+	min-height: 50%;
+	max-height: 50%;
+	height: 50%;
+}
+
+#cvc-container .modal-content {
+	height: 100%;
+}
+
+#cvclist-toolbar {
+	padding-bottom: 1px;
+}
+
+#cvclistcontent {
+	padding: 2px;
+	border: 1px solid #aaaaaa;
+}
+
+#cvclistcontent .row {
+	padding: .5rem;
+}
+
+#cvc-container .modal-dialog .modal-body {
+	padding-top: 0px;
+}
