@@ -79,3 +79,11 @@ a.btn {
 #cvc-container .modal-dialog .modal-body {
 	padding-top: 0px;
 }
+
+.cvc-f-name {
+	display: inline-block;
+	width: 8rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}

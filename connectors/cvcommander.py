@@ -52,8 +52,8 @@ def upload_file():
 
             filename = secure_filename(f.filename)
             f.save(os.path.join('static', 'uploads', filename))
-            output_data.append(url_for('static', filename='uploads/' + filename))
-            return {'files': output_data}
+            output_data.append(url_for('static', filename='uploads/' + filename, _external=True))
+            return jsonify({'files': output_data})
     except:
         current_app.logger.debug(format_exc())
         return "There was a problem uploading the file", 400

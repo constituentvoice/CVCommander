@@ -19,7 +19,11 @@
 				iconView: 'fa-th-large',
 				listView: 'fa-th-list',
 				closeCommander: 'fa-close',
-
+				useFile: 'fa-check-circle',
+				viewFile: 'fa-eye',
+				copyFile: 'fa-copy',
+				moveFile: 'fa-arrows-alt',
+				deleteFile: 'fa-trash-alt'
 
 			},
 			error: function(msg) { console.log(msg); },
@@ -235,7 +239,6 @@
 					self.$elem.cvcommander('upload', files, function(data) {
 						$('.cvcdropmessage').show();
 						$('.cvcprogress').hide();
-
 						self.$elem.val(data.files[0]);
 					});
 					$(this).parent().find('.cvcupload-inline').hide();
@@ -276,12 +279,12 @@
 					}
 					if(icon_lg === 'self' && view_type === 'icons') {
 						icon_out = '<div class="cvc-file col-md-3 text-center" data-link="' + icon_data.url +'"><img src="' + icon_data.url + '" style="max-width:4em; max-height:4em;" align="center">';
-						icon_out += '<br>' + icon_data.name + '</div>';
+						icon_out += '<br>' + 'GG<span class="cvc-f-name">' + icon_data.name + '</span></div>';
 					}
 					else {
 						if(view_type === 'icons') {
 							icon_out = '<div class="cvc-file col-md-3 text-center" data-link="' + icon_data.url + '"><i class="fas fa-3x fa-' + icon_lg + '"></i><br>';
-							icon_out += icon_data.name + '</div>'
+							icon_out += '<span class="cvc-f-name">' + icon_data.name + '</span></div>'
 						}
 						else {
 							icon_out = '<tr class="cvc-file" data-link="' + icon_data.url + '"><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
@@ -427,6 +430,27 @@
 		},
 		remove: function(obj, file) {
 		},
+		mk_context_action: function(_link, _class, _text, _icon, obj, file) {
+			return $('<a>').attr('href', _link).addClass('list-group-item list-group-action ' + _class).append(
+				$('<i>').addClass(this._fa_base_class + ' ' + _icon),
+				' ' + _text
+			).data({filedom: obj, link: file});
+		},
+		context: function(obj, file, x, y) {
+			// create the context menu
+			var self = this;
+			var ctx_menu = $('<div>').addClass('cvccontext').css({
+				position:'absolute', top: y, left: x, backgroundColor: 'white', zIndex: '99999', width:'11rem'}).append(
+					$('<div>').addClass('list-group').append(
+						self.mk_context_action('#', 'cvc-select', 'Use', self.options.fa_icons.useFile, obj, file),
+						self.mk_context_action('#', 'cvc-view', 'Preview', self.options.fa_icons.viewFile, obj, file),
+						self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file),
+						self.mk_context_action('#', 'cvc-move', 'Move', self.options.fa_icons.moveFile, obj, file),
+						self.mk_context_action('#', 'cvc-delete', 'Delete', self.options.fa_icons.deleteFile, obj, file)
+					)
+			);
+			$('body').append(ctx_menu);
+		},
 		view: function(obj, file) {
 		},
 		select: function(obj, file) {
@@ -513,6 +537,21 @@
 				   var file = $(this).attr('data-link');
 				   self.select(this, file);
                 });
+
+				$(document).on('click', '.cvc-select', function(e){
+					e.preventDefault();
+					var file = $(this).data('link');
+					self.select($(this).data('filedom'), file);
+				});
+
+				$(document).on('click', function(e) {
+					$('.cvccontext').remove();
+				});
+
+				$(document).on('contextmenu', '.cvc-file', function(e) {
+					e.preventDefault();
+					self.context(this, $(this).attr('data-link'), e.clientX, e.clientY);
+				});
 
 				$('#cvc-container').modal('show');
 				self.frame = frame;
