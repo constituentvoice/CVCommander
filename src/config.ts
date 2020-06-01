@@ -1,4 +1,4 @@
-interface cvcFaIcons {
+export interface cvcFaIcons {
     openCommander?: string,
     iconView?: string,
     listView?: string,
@@ -11,7 +11,7 @@ interface cvcFaIcons {
 }
 
 // defines font-awesome icons to use for various mime-types.
-let cvcMimeIcons:any = {
+export const cvcMimeIcons:any = {
     'application/postscript': 'file-pdf',
     'application/pdf': 'file-pdf',
     'application/msword': 'file-word',
@@ -29,7 +29,7 @@ let cvcMimeIcons:any = {
     'dir': 'folder'
 }
 
-interface cvCommanderConfig {
+export interface cvCommanderConfig {
     width?: number,
     height?: number,
     uploadUrl?: string,
@@ -49,7 +49,7 @@ interface cvCommanderConfig {
     icons?: object,
 }
 
-let cvcIconDefaults: cvcFaIcons = {
+export const cvcIconDefaults: cvcFaIcons = {
     openCommander: 'fa-camera',
     iconView: 'fa-th-large',
     listView: 'fa-th-list',
@@ -61,7 +61,7 @@ let cvcIconDefaults: cvcFaIcons = {
     deleteFile: 'fa-trash-alt'
 }
 
-let cvcDefaults: cvCommanderConfig = {
+export const cvcDefaults: cvCommanderConfig = {
     width: 600,
     height: 400,
     uploadUrl: '/cvc/upload',
@@ -80,3 +80,11 @@ let cvcDefaults: cvCommanderConfig = {
     error: function(msg:string) { console.log(msg); },
     icons: cvcMimeIcons
 }
+
+export const cvcFaVarients: any = {
+    free: 'fas',
+    regular: 'far',
+    light: 'fal',
+    duotone: 'fad'
+}
+
