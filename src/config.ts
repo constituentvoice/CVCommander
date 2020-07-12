@@ -49,6 +49,22 @@ export interface cvCommanderConfig {
     icons?: object,
 }
 
+export interface cvcFile {
+    url: string,
+    name: string,
+    size: number,
+    type: string,
+    modified: number
+}
+
+export interface cvcListOptions {
+    view?: string
+}
+
+export const cvcListDefaults = {
+    view: 'icons'
+}
+
 export const cvcIconDefaults: cvcFaIcons = {
     openCommander: 'fa-camera',
     iconView: 'fa-th-large',
@@ -65,7 +81,7 @@ export const cvcDefaults: cvCommanderConfig = {
     width: 600,
     height: 400,
     uploadUrl: '/cvc/upload',
-    uploadField: '/cvc/list',
+    uploadField: 'uploads',
     allowInlineDrop: true,
     listFilesUrl: '/cvc/list',
     path: '/',
