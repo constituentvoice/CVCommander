@@ -115,21 +115,45 @@
 					.append($('<i>').addClass(this._fa_base_class + ' fa-sm fa-close'))
 			);
 
+			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
+				$('<div>').addClass('btn-group').append(
+					$('<a>').attr({href: '#', name: 'Icon View'}).data('view-type', 'icons').addClass(
+						'cvview btn btn-sm btn-light disabled'
+					).append($('<i>').addClass(this._fa_base_class + ' fa-th-large')),
+					$('<a>').attr({href: '#', name: 'List View'}).data('view-type', 'list').addClass(
+						'cvview btn btn-sm btn-light disabled'
+					).append($('<i>').addClass(this._fa_base_class + ' fa-th-list'))
+				),
+				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
+				$('<div>').addClass('btn-group').append(
+					$('<a>').attr({href: '#', name: 'Use'}).addClass(
+						'btn btn-sm btn-light cvc-use disabled cv-file-opt').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.useFile)
+					),
+					$('<a>').attr({href: '#', name: 'Preview'}).addClass(
+						'btn btn-sm btn-light cvc-view disabled cv-file-opt').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.viewFile)
+					),
+					$('<a>').attr({href: '#', name: 'Copy'}).addClass(
+						'btn btn-sm btn-light cvc-copy disabled cv-file-opt').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.copyFile)
+					),
+					$('<a>').attr({href: '#', name: 'Move'}).addClass(
+						'btn btn-sm btn-light cvc-move disabled cv-file-opt').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.moveFile)
+					),
+					$('<a>').attr({href: '#', name: 'Delete'}).addClass(
+						'btn btn-sm btn-light cvc-delete disabled cv-file-opt').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.deleteFile)
+					)
+				)
+
+			);
+
 			$body.append(
 				$('<div>').addClass('tab-content').append(
 					$('<div>').addClass('tab-pane active').attr('id', 'cvclistview').append(
-						$('<div>').attr('id', 'cvclist-toolbar').append(
-							$('<div>').addClass('btn-group').append(
-								$('<a>').attr('href', '#').attr({name: 'Icon View', 'alt': 'Icon View'})
-									.data('view-type', 'icons').addClass('cvview btn btn-sm btn-light').append(
-										$('<i>').addClass(this._fa_base_class + ' fa-th-large')
-								),
-								$('<a>').attr('href', '#').attr({name: 'List View', alt: 'List View'})
-									.data('view-type', 'list').addClass('cvview btn btn-sm btn-light').append(
-										$('<i>').addClass(this._fa_base_class + ' fa-th-list')
-								)
-							)
-						),
+						$toolbar,
 						$('<div>').attr('id', 'cvclistcontent').addClass('container')
 					),
 					$('<label>').addClass('tab-pane text-muted center').prop('id', 'cvcupload').append(
@@ -328,6 +352,7 @@
 			options = options || {};
 			let listpane = this.frame.find('#cvclistcontent');
 			let viewtype = options.view || listpane.data('view') || 'icons';
+			$('.cvview').removeClass('disabled');
 			if(options.view && options.view !== listpane.data('view')) {
 				refresh = true;
 			}
@@ -370,23 +395,32 @@
 				}
 			});
 
-			$.getJSON(self.options.list_files_url, function(resp) {
-				let ico_count = 0;
-				$.each(resp.files, function(idx, obj) {
-					listpane.append(self.create_icon(obj, viewtype));
-					ico_count ++;
-					if(ico_count === 4 && viewtype === 'icons') {
-						ico_count = 0;
-						let newpane = $('<div class="row"></div>');
-						listpane.parent().append(newpane);
-						listpane = newpane;
-					}
-				});
-				// here because it needs to be after the icons load
-				if(refresh) {
+			if(refresh) {
+				$.getJSON(self.options.list_files_url, function (resp) {
+					let ico_count = 0;
+					$.each(resp.files, function (idx, obj) {
+						listpane.append(self.create_icon(obj, viewtype));
+						ico_count++;
+						if (ico_count === 4 && viewtype === 'icons') {
+							ico_count = 0;
+							let newpane = $('<div class="row"></div>');
+							listpane.parent().append(newpane);
+							listpane = newpane;
+						}
+					});
+					// here because it needs to be after the icons load
 					listpane.parent().append('<div class="clearfix"></div>');
-				}
-			});
+
+					// not using event because this is needed internally
+					if(typeof options.refresh_callback === "function") {
+						options.refresh_callback(resp.files)
+					}
+					$('#browsetab').tab('show');
+				});
+			}
+			else {
+				$('#browsetab').tab('show');
+			}
 		},
 		progress:function(percent) {
 			$('.cvcprogress').find('.progress-bar').attr('aria-valuenow', percent);
@@ -399,8 +433,20 @@
 				callback_success = function(data) {
 					$('.cvcdropmessage').show();
 					$('.cvcprogress').hide();
-					self.list('/', true);
-					$('a[href="#cvclistview"]').trigger('click');
+					let _uploaded = null;
+					if(data.files.length > 0) {
+						_uploaded = data.files[0];
+					}
+					self.list('/', true, {
+						refresh_callback: function(_files) {
+							$('.cvc-file').each(function(idx) {
+								if($(this).data('link') === _uploaded) {
+									self.select(this, _uploaded);
+									return false;
+								}
+							})
+						}
+					});
 				};
 			}
 
@@ -410,6 +456,7 @@
 
 			let fd = new FormData();
 			let total_size = 0;
+			console.log(files);
 			$.each(files, function(idx, f) {
 				fd.append( self.upload_field, f )
 				total_size += f.size;
@@ -417,9 +464,9 @@
 
 			$('.cvcdropmessage').hide();
 			$('.cvcprogress').show();
-			console.log(fd);
 			$.ajax( {
-				xhr: function(xhrobj) {
+				xhr: function() {
+					let xhrobj = new window.XMLHttpRequest();
 					if( xhrobj.upload ) {
 						xhrobj.upload.addEventListener('progress', function(e) {
 							var pos = e.loaded || e.position;
@@ -441,7 +488,7 @@
 				data: fd,
 				success: callback_success,
 				error: function(jqXHR, txtstatus, err) {
-					self.options.error(txtstatus);
+					self.options.error(txtstatus, err);
 				}
 			})
 		},
@@ -466,7 +513,7 @@
 				position:'absolute', top: y, left: x, backgroundColor: 'white', zIndex: '99999', width:'11rem'}).append(
 					$('<div>').addClass('list-group').append(
 						$('<div>').addClass('list-group-item list-group-item-dark cvc-file').text(filename),
-						self.mk_context_action('#', 'cvc-select', 'Use', self.options.fa_icons.useFile, obj, file),
+						self.mk_context_action('#', 'cvc-use', 'Use', self.options.fa_icons.useFile, obj, file),
 						self.mk_context_action('#', 'cvc-view', 'Preview', self.options.fa_icons.viewFile, obj, file),
 						self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file),
 						self.mk_context_action('#', 'cvc-move', 'Move', self.options.fa_icons.moveFile, obj, file),
@@ -476,11 +523,19 @@
 			$('body').append(ctx_menu);
 		},
 		view: function(obj, file) {
-
+			let pane = $('#cvclistcontent');
 		},
-		select: function(obj, file) {
+		usefile: function(obj, file) {
 			this.$elem.val(file);
 			this.close_browser();
+		},
+		select: function(obj, file) {
+			$('.cvc-selected').removeClass('cvc-selected');
+
+			$(obj).addClass('cvc-selected');
+			$('.cv-file-opt').each(function(idx) {
+				$(this).data({filedom: $(obj).data('filedom'), link: file}).removeClass('disabled')
+			})
 		},
 		close_browser: function(obj) {
 			$('a[href="#cvclistview"]').trigger('click'); // ensure we're on the list view
@@ -521,6 +576,7 @@
 					let folder = $(this).data('folder') || '/';
 					self.list(folder, true, {view:$(this).data('view-type')})
 				});
+
 				$(document).on('dragenter','#cvclistview', function(e) {
 					_clean_event(e);
 					$('a[href="#cvcupload"]').trigger('click'); // ugly hack
@@ -558,17 +614,15 @@
 				});
 
 				$(document).on('click', '.cvc-file', function(e) {
-				   e.preventDefault();
-				   // let file = $(this).attr('data-link');
-					let file = $(this).data('link');
-				    self.select(this, file);
+				    e.preventDefault();
+				    self.select(this, $(this).data('link'))
                 });
 
-				$(document).on('click', '.cvc-select', function(e){
+				$(document).on('click', '.cvc-use', function(e){
 					e.preventDefault();
 					//let file = $(this).data('link');
 					let file = $(this).data('link');
-					self.select($(this).data('filedom'), file);
+					self.usefile($(this).data('filedom'), file);
 				});
 
 				$(document).on('click', function(e) {

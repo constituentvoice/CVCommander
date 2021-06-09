@@ -95,3 +95,16 @@ a.btn {
 .cvc-modal-body {
 	overflow: auto;
 }
+
+.cvc-vertical-sep {
+	font-size: large;
+	color: black;
+}
+
+.cvc-file {
+	cursor: pointer;
+}
+
+.cvc-selected {
+	background-color: #ddd;
+}
