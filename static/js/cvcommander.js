@@ -1,5 +1,5 @@
 ;(function( $, window, document, undefined ) {
-	var plugin_name = "cvCommander",
+	let plugin_name = "cvCommander",
 		defaults = {
 			width: 600,
 			height: 400,
@@ -51,12 +51,12 @@
 			}
 		};
 
-	var _clean_event = function(e) {
+	const _clean_event = function(e) {
 		e.stopPropagation();
 		e.preventDefault();
 	};
 
-	var cvCommander = function ( element, config ) {
+	const cvCommander = function ( element, config ) {
 		this.element = element;
 		this._defaults = defaults;
 		this._name = plugin_name;
@@ -83,12 +83,12 @@
 			}
 
 			/* create modal */
-			var $frame, $modal, $header, $body;
+			let $frame, $modal, $header, $body;
 			if(this.options.modal) {
 				$frame = $('<div>').attr('id', 'cvc-container').addClass('modal fade');
 				$modal = $('<div>').addClass('modal-content');
 				$header = $('<div>').addClass('modal-header')
-				$body = $('<div>').addClass('modal-body')
+				$body = $('<div>').addClass('cvc-modal-body modal-body')
 			}
 			else {
 				$frame = $('<div>').attr('id', 'cvc-container');
@@ -99,7 +99,8 @@
 
 
 			$header.append(
-				$('<ul>').addClass('nav nav-tabs').attr('role', 'tablist').prop('id', 'cvcmaintabs').append(
+				$('<ul>').addClass('nav nav-tabs').attr('role', 'tablist').prop(
+					'id', 'cvcmaintabs').append(
 					$('<li>').addClass('nav-item').append(
 						$('<a>').attr({id: 'browsetab', href: '#cvclistview', role: 'tab', 'data-toggle': 'tab'})
 							.addClass('nav-link active')
@@ -143,7 +144,7 @@
 				)
 			);
 
-			var $dialog = $('<div>').attr('role', 'document').addClass('modal-dialog modal-lg').append($modal);
+			let $dialog = $('<div>').attr('role', 'document').addClass('modal-dialog modal-lg').append($modal);
 			$modal.append($header, $body);
 			if(this.options.modal) {
 				$frame.append($dialog.append($modal));
@@ -156,11 +157,11 @@
 			this.frame_html = $frame;
 
 			/* create button */
-			var button = $('<button />');
+			let button = $('<button />');
 			button.attr('type', "button");
 			button.addClass(this.options.button_class);
 			
-			var _markup = '';
+			let _markup = '';
 			if( this.options.fa_icons.openCommander ) {
 				_markup += '<i class="' + this._fa_base_class + ' ' + this.options.fa_icons.openCommander + '"></i>';
 				if( this.options.button_text ) {
@@ -168,13 +169,13 @@
 				}
 			}
 
-			var self = this;
+			let self = this;
 			_markup += this.options.button_text;
 			if( _markup ) {
 				button.html(_markup)
 			}
 
-			button.click( function(e) {
+			button.on('click', function(e) {
 				e.preventDefault();
 				self.open_browser();
 			});
@@ -192,10 +193,10 @@
 						)
 					)
 				);
-				var swap_inline = function(e, container, show_hide) {
+				let swap_inline = function(e, container, show_hide) {
 					_clean_event(e);
-					var cvcinput = $(container).find('.cvcinput');
-					var cvcinline = $(container).find('.cvcupload-inline');
+					let cvcinput = $(container).find('.cvcinput');
+					let cvcinline = $(container).find('.cvcupload-inline');
 
 					if(show_hide === 'show') {
 						cvcinline.show();
@@ -220,8 +221,8 @@
 				});
 
 				$(document).on('dragleave', '.cvccontainer', function(e) {
-					var container = $(e.target).closest('.cvccontainer');
-					if(e.target == this) {
+					let container = $(e.target).closest('.cvccontainer');
+					if(e.target === this) {
 						swap_inline(e, container, 'hide');
 					}
 				});
@@ -233,8 +234,8 @@
 
 				$(document).on('drop', '.cvcupload-inline', function(e) {
 					e.preventDefault();
-					var files = e.originalEvent.dataTransfer.files;
-					var ipt = $(this).parent().find('.cvcinput');
+					let files = e.originalEvent.dataTransfer.files;
+					let ipt = $(this).parent().find('.cvcinput');
 					ipt.show();
 					self.$elem.cvcommander('upload', files, function(data) {
 						$('.cvcdropmessage').show();
@@ -247,7 +248,7 @@
 			}
 		},
 		human_size: function(bytes, iter) {
-			var labels = ['B', 'K', 'M', 'G'];
+			let labels = ['B', 'K', 'M', 'G'];
 			if(!iter) {
 				iter = 0;
 			}
@@ -262,57 +263,71 @@
 				return this.human_size(bytes, iter++);
 			}
 		},
+		_build_icon_html: function(icon_data, view_type, icon_lg, icon_sm) {
+			let icon_out = null;
+			let self = this;
+			if(view_type === 'icons') {
+				icon_out = $('<div>').addClass('cvc-file col-md-3 text-center').data(
+					'link', icon_data.url)
+
+				if(icon_lg === 'self') {
+					icon_out.append($('<img>').attr({src: icon_data.url, alt: icon_data.name}).css({
+						maxWidth: '4em',
+						maxHeight: '3em',
+						height: '3em'
+					}))
+				}
+				else {
+					icon_out.append($('<i>').addClass(self._fa_base_class + ' fa-3x fa-' + icon_lg))
+				}
+				icon_out.append(
+					$('<br>'),
+					$('<span>').addClass('cvc-f-name').text(icon_data.name)
+				)
+			}
+			else {
+				icon_out = $('<tr>').addClass('cvc-file').data('link', icon_data.url).append(
+					$('<td>').append(
+						$('<i>').addClass(self._fa_base_class + ' fa-' + icon_sm),
+						' ' + icon_data.name
+					),
+					$('<td>').data('sort', icon_data.modified).text(moment.unix(icon_data.modified).format(
+						'ddd, MMM do, YYYY')
+					),
+					$('<td>').data('sort', icon_data.size).text(self.human_size(icon_data.size))
+				)
+			}
+			return icon_out;
+		},
 		create_icon: function(icon_data, view_type) {
-			var icon_out = '';
+			let icon_out = null;
 			if(!view_type) {
 				view_type = 'icons';
 			}
-			var self = this;
+			let self = this;
 			$.each(self.options.icons, function(rule, icon_name) {
-				var rrule = new RegExp(rule);
+				let rrule = new RegExp(rule);
 				if(icon_data.type.match(rrule) || icon_data.type === rule) {
-					var icon_lg = icon_name;
-					var icon_sm = icon_name;
+					let icon_lg = icon_name;
+					let icon_sm = icon_name;
 					if(Array.isArray(icon_name)) {
 						icon_lg = icon_name[0];
 						icon_sm = icon_name[1];
 					}
-					if(icon_lg === 'self' && view_type === 'icons') {
-						icon_out = '<div class="cvc-file col-md-3 text-center" data-link="' + icon_data.url +'"><img src="' + icon_data.url + '" style="max-width:4em; max-height:4em;" align="center">';
-						icon_out += '<br>' + 'GG<span class="cvc-f-name">' + icon_data.name + '</span></div>';
-					}
-					else {
-						if(view_type === 'icons') {
-							icon_out = '<div class="cvc-file col-md-3 text-center" data-link="' + icon_data.url + '"><i class="fas fa-3x fa-' + icon_lg + '"></i><br>';
-							icon_out += '<span class="cvc-f-name">' + icon_data.name + '</span></div>'
-						}
-						else {
-							icon_out = '<tr class="cvc-file" data-link="' + icon_data.url + '"><td><i class="fa fa-' + icon_sm +'"></i>&nbsp;' + icon_data.name + '</td>';
-							icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment.unix(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
-							icon_out += '<td data-sort="'+ icon_data.size + '">' + self.human_size(icon_data.size) + '</td></tr>';
-						}
-					}
+					icon_out = self._build_icon_html(icon_data, view_type, icon_lg, icon_sm);
 					return false;
 				}
 			});
 			if(!icon_out) {
-				if(view_type == 'icons') {
-					icon_out = '<div class="col-md-3 text-center"><i class="fa fa-3x fa-file-o"></i><br>';
-					icon_out += icon_data.name + '</div>'
-				}
-				else {
-					icon_out = '<tr><td><i class="fas fa-file-o"></i>&nbsp;' + icon_data.name + '</td>';
-					icon_out += '<td data-sort="'+ icon_data.modified + '">' + moment(icon_data.modified).format('ddd, MMM do, YYYY') + '</td>';
-					icon_out += '<td data-sort="'+ icon_data.size + '">' + self.human_size(icon_data.size) + '</td></tr>';
-				}
+				icon_out = self._build_icon_html(icon_data, view_type, 'file', 'file')
 			}
 			return icon_out;
 		},
 		list:function(folder, refresh, options) {
-			var self = this;
+			let self = this;
 			options = options || {};
-			var listpane = this.frame.find('#cvclistcontent');
-			var viewtype = options.view || listpane.data('view') || 'icons';
+			let listpane = this.frame.find('#cvclistcontent');
+			let viewtype = options.view || listpane.data('view') || 'icons';
 			if(options.view && options.view !== listpane.data('view')) {
 				refresh = true;
 			}
@@ -320,11 +335,18 @@
 			if(refresh) {
 				listpane.html('');
 				if(viewtype == 'icons') {
-					listpane.append('<div class="row"></div>');
+					listpane.append($('<div>').addClass('row'));
 				}
 				else {
-					listpane.append('<table width="100%" class="table table-striped"><tr><th>Name</th><th>Modified</th>' +
-						'<th>Size</th></tr>');
+					listpane.append(
+						$('<table>').addClass('table table-striped').append(
+							$('<tr>').append(
+								$('<th>').text('Name'),
+								$('<th>').text('Modified'),
+								$('<th>').text('Size')
+							)
+						)
+					)
 				}
 			}
 
@@ -349,13 +371,13 @@
 			});
 
 			$.getJSON(self.options.list_files_url, function(resp) {
-				var ico_count = 0;
+				let ico_count = 0;
 				$.each(resp.files, function(idx, obj) {
 					listpane.append(self.create_icon(obj, viewtype));
 					ico_count ++;
 					if(ico_count === 4 && viewtype === 'icons') {
 						ico_count = 0;
-						var newpane = $('<div class="row"></div>');
+						let newpane = $('<div class="row"></div>');
 						listpane.parent().append(newpane);
 						listpane = newpane;
 					}
@@ -371,14 +393,14 @@
 			$('.cvcprogress').find('.progress-bar').css('width',percent + '%');
 		},
 		upload:function(files, callback_success) {
-			var self = this;
+			let self = this;
 
 			if(typeof callback_success !== 'function') {
 				callback_success = function(data) {
 					$('.cvcdropmessage').show();
 					$('.cvcprogress').hide();
 					self.list('/', true);
-					$('a[href="#cvclistview"]').click();
+					$('a[href="#cvclistview"]').trigger('click');
 				};
 			}
 
@@ -386,8 +408,8 @@
 				return self.options.error('No files were selected for upload');
 			}
 
-			var fd = new FormData();
-			var total_size = 0;
+			let fd = new FormData();
+			let total_size = 0;
 			$.each(files, function(idx, f) {
 				fd.append( self.upload_field, f )
 				total_size += f.size;
@@ -397,8 +419,7 @@
 			$('.cvcprogress').show();
 			console.log(fd);
 			$.ajax( {
-				xhr: function() {
-					var xhrobj = $.ajaxSettings.xhr();
+				xhr: function(xhrobj) {
 					if( xhrobj.upload ) {
 						xhrobj.upload.addEventListener('progress', function(e) {
 							var pos = e.loaded || e.position;
@@ -431,17 +452,20 @@
 		remove: function(obj, file) {
 		},
 		mk_context_action: function(_link, _class, _text, _icon, obj, file) {
-			return $('<a>').attr('href', _link).addClass('list-group-item list-group-action ' + _class).append(
+			return $('<a>').attr('href', _link).addClass('list-group-item list-group-item-action ' + _class).append(
 				$('<i>').addClass(this._fa_base_class + ' ' + _icon),
 				' ' + _text
 			).data({filedom: obj, link: file});
 		},
 		context: function(obj, file, x, y) {
 			// create the context menu
-			var self = this;
-			var ctx_menu = $('<div>').addClass('cvccontext').css({
+			let self = this;
+			let filename = file.split(/[\\/]/).pop();
+			$('.cvccontext').remove();
+			let ctx_menu = $('<div>').addClass('cvccontext').css({
 				position:'absolute', top: y, left: x, backgroundColor: 'white', zIndex: '99999', width:'11rem'}).append(
 					$('<div>').addClass('list-group').append(
+						$('<div>').addClass('list-group-item list-group-item-dark cvc-file').text(filename),
 						self.mk_context_action('#', 'cvc-select', 'Use', self.options.fa_icons.useFile, obj, file),
 						self.mk_context_action('#', 'cvc-view', 'Preview', self.options.fa_icons.viewFile, obj, file),
 						self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file),
@@ -452,18 +476,19 @@
 			$('body').append(ctx_menu);
 		},
 		view: function(obj, file) {
+
 		},
 		select: function(obj, file) {
 			this.$elem.val(file);
 			this.close_browser();
 		},
 		close_browser: function(obj) {
-			$('a[href="#cvclistview"]').click(); // ensure we're on the list view
+			$('a[href="#cvclistview"]').trigger('click'); // ensure we're on the list view
 			$('#cvc-container').modal('hide');
 		},
 		open_browser: function(obj) {
-			var frame = null;
-			var self = this;
+			let frame = null;
+			let self = this;
 
 			if( !this.options.modal ) {
 				frame = window.open('/frame.html','cvc-container','width='+this.options.width+',height='+this.options.height+',menubar=no,location=no,resizable=yes,scrollbars=yes,status=no');
@@ -493,12 +518,12 @@
 					_clean_event(e);
 				});
 				$(document).on('click', '.cvview', function(e) {
-					var folder = $(this).data('folder') || '/';
+					let folder = $(this).data('folder') || '/';
 					self.list(folder, true, {view:$(this).data('view-type')})
 				});
 				$(document).on('dragenter','#cvclistview', function(e) {
 					_clean_event(e);
-					$('a[href="#cvcupload"]').click(); // ugly hack
+					$('a[href="#cvcupload"]').trigger('click'); // ugly hack
 					self.back_to_list = true;
 				});
 
@@ -515,14 +540,14 @@
 				$(document).on('dragleave','#cvcupload',function(e) {
 					$('#cvcupload').addClass('text-muted');
 					if( self.back_to_list ) {
-						$('a[href="#cvclistview"]').click();
+						$('a[href="#cvclistview"]').trigger('click');
 					}
 				});
 
 				$(document).on('drop','#cvcupload',function(e) {
 					e.preventDefault();
 					$('#cvcupload').addClass('text-muted');
-					var files = e.originalEvent.dataTransfer.files;
+					let files = e.originalEvent.dataTransfer.files;
 					self.upload( files );
 				});
 
@@ -534,13 +559,15 @@
 
 				$(document).on('click', '.cvc-file', function(e) {
 				   e.preventDefault();
-				   var file = $(this).attr('data-link');
-				   self.select(this, file);
+				   // let file = $(this).attr('data-link');
+					let file = $(this).data('link');
+				    self.select(this, file);
                 });
 
 				$(document).on('click', '.cvc-select', function(e){
 					e.preventDefault();
-					var file = $(this).data('link');
+					//let file = $(this).data('link');
+					let file = $(this).data('link');
 					self.select($(this).data('filedom'), file);
 				});
 
@@ -550,7 +577,8 @@
 
 				$(document).on('contextmenu', '.cvc-file', function(e) {
 					e.preventDefault();
-					self.context(this, $(this).attr('data-link'), e.clientX, e.clientY);
+					let file = $(this).data('link');
+					self.context(this, file, e.clientX, e.clientY);
 				});
 
 				$('#cvc-container').modal('show');
@@ -561,8 +589,8 @@
 	};
 
 	$.fn.cvcommander = function(arg1, arg2, arg3) {
-		var method = 'init';
-		var options = {};
+		let method = 'init';
+		let options = {};
 		if(typeof arg1 === 'object' && !arg2) {
 			options = arg1;
 		}
@@ -574,21 +602,21 @@
 			method = arg1;
 		}
 
-		var results = [];
+		let results = [];
 		this.each( function() {
 			if($(this).data('cvcommander') && method == 'init') {
 				method = 'open_browser';
 			}
 
 			if(method === 'init' || !$(this).data('cvcommander')) {
-				var _cvcommander = new cvCommander(this, options);
+				let _cvcommander = new cvCommander(this, options);
 				_cvcommander.init(options);
 				$(this).data('cvcommander', _cvcommander);
 				results.push(_cvcommander);
 			}
 			else {
 				// try to call the method
-				var _cvcommander_c = $(this).data('cvcommander');
+				let _cvcommander_c = $(this).data('cvcommander');
 				try {
 					results.push(_cvcommander_c[method](arg2, arg3))
 				}

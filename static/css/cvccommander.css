@@ -87,3 +87,11 @@ a.btn {
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+.cvccontext {
+	box-shadow: 5px 5px 10px #333;
+}
+
+.cvc-modal-body {
+	overflow: auto;
+}
