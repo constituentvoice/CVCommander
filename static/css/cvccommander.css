@@ -86,6 +86,11 @@ a.btn {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	font-size: 14px;
+}
+
+.cvc-f-name-font {
+	color: black;
 }
 
 .cvccontext {
@@ -93,7 +98,7 @@ a.btn {
 }
 
 .cvc-modal-body {
-	overflow: auto;
+	overflow-y: auto;
 }
 
 .cvc-vertical-sep {
@@ -103,8 +108,65 @@ a.btn {
 
 .cvc-file {
 	cursor: pointer;
+	color: #666666;
+}
+
+/* icon colors */
+.cvc-file-pdf {
+	color: darkred;
+}
+
+.cvc-file-word {
+	color: darkblue;
+}
+
+.cvc-file-excel {
+	color: darkgreen;
+}
+
+.cvc-file-powerpoint {
+	color: orangered;
+}
+
+.cvc-file-code {
+	color: darkorange;
+}
+
+.cvc-file-archive {
+	color: gold;
+}
+
+.cvc-file-image {
+	color: green;
+}
+
+.cvc-file-video {
+	color: purple;
+}
+
+.cvc-file-audio {
+	color: blueviolet;
+}
+
+.cvc-folder {
+	color: deepskyblue;
 }
 
 .cvc-selected {
 	background-color: #ddd;
+}
+
+.cvc-file-csv {
+	color: darkgreen;
+}
+
+.cvc-modal-modal {
+	width: 100%;
+	display: none;
+	position: absolute;
+	top: 30px;
+}
+
+.cvc-modal-modal-content {
+	box-shadow: 5px 5px 10px #333;
 }
