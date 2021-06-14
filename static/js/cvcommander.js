@@ -512,16 +512,28 @@
 			if(refresh) {
 				$.getJSON(self.options.list_files_url, {path: folder}, function (resp) {
 					let ico_count = 0;
-					$.each(resp.files, function (idx, obj) {
-						listpane.append(self.create_icon(obj, viewtype));
-						ico_count++;
-						if (ico_count === 4 && viewtype === 'icons') {
-							ico_count = 0;
-							let newpane = $('<div class="row"></div>');
-							listpane.parent().append(newpane);
-							listpane = newpane;
-						}
-					});
+					if(resp.files.length < 1) {
+						listpane.append(
+							$('<div>').css({
+								minHeight: '100px',
+								margin: '0 auto'
+							}).addClass('text-center text-muted').text(
+								'This folder is empty'
+							)
+						)
+					}
+					else {
+						$.each(resp.files, function (idx, obj) {
+							listpane.append(self.create_icon(obj, viewtype));
+							ico_count++;
+							if (ico_count === 4 && viewtype === 'icons') {
+								ico_count = 0;
+								let newpane = $('<div class="row"></div>');
+								listpane.parent().append(newpane);
+								listpane = newpane;
+							}
+						});
+					}
 					// here because it needs to be after the icons load
 					listpane.parent().append('<div class="clearfix"></div>');
 
