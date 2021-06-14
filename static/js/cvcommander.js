@@ -808,14 +808,14 @@
 					_clean_event(e);
 				});
 
-				$(document).on('click', '.cvview', function(e) {
+				$(frame).on('click', '.cvview', function(e) {
 					e.preventDefault();
 					let folder = $(this).data('folder') || '/';
 					let viewtype = $(this).data('view-type') || self.frame.find('#cvclistcontent').data('view') || 'icons';
 					self.list(folder, true, {view: viewtype})
 				});
 
-				$(document).on('click', '.cvc-create-folder', function(e) {
+				$(frame).on('click', '.cvc-create-folder', function(e) {
 					e.preventDefault();
 					self.create_folder_modal($('#cvclistview').data('folder') || '/');
 				});
@@ -825,30 +825,25 @@
 					self.copy_modal($(this).data('filedom'));
 				})
 
-				$(document).on('dragenter','#cvclistview', function(e) {
+				$(frame).on('dragenter','#cvclistview', function(e) {
 					_clean_event(e);
 					$('a[href="#cvcupload"]').trigger('click'); // ugly hack
 					self.back_to_list = true;
 				});
 
-				$(document).on('dragenter','#cvcupload',function(e) {
+				$(frame).on('dragenter, dragover','#cvcupload',function(e) {
 					$('#cvcupload').removeClass('text-muted');
 					_clean_event(e);
 				});
 
-				$(document).on('dragover','#cvcupload',function(e) {
-					$('#cvcupload').removeClass('text-muted');
-					_clean_event(e);
-				});
-
-				$(document).on('dragleave','#cvcupload',function(e) {
+				$(frame).on('dragleave','#cvcupload',function(e) {
 					$('#cvcupload').addClass('text-muted');
 					if( self.back_to_list ) {
 						$('a[href="#cvclistview"]').trigger('click');
 					}
 				});
 
-				$(document).on('drop','#cvcupload',function(e) {
+				$(frame).on('drop','#cvcupload',function(e) {
 					e.preventDefault();
 					$('#cvcupload').addClass('text-muted');
 					let files = e.originalEvent.dataTransfer.files;
@@ -861,39 +856,39 @@
 					self.upload(this.files);
 				});
 
-				$(document).on('click', '.cvc-file-info', function(e) {
+				$(frame).on('click', '.cvc-file-info', function(e) {
 				    e.preventDefault();
 				    self.select(this, $(this).data('link'))
                 });
 
-				$(document).on('click', '.cvc-use', function(e){
+				$(frame).on('click', '.cvc-use', function(e){
 					e.preventDefault();
 					//let file = $(this).data('link');
 					let file = $(this).data('link');
 					self.usefile($(this).data('filedom'), file);
 				});
 
-				$(document).on('click', '.cvc-view', function(e) {
+				$(frame).on('click', '.cvc-view', function(e) {
 					e.preventDefault();
 					let file = $(this).data('link');
 					self.view(this, file);
 				})
 
-				$(document).on('click', function(e) {
+				$(frame).on('click', function(e) {
 					$('.cvccontext').remove();
 				});
 
-				$(document).on('click', '.cvc-cancel-model2x', function(e) {
+				$(frame).on('click', '.cvc-cancel-model2x', function(e) {
 					$(this).closest('.cvc-modal-modal').hide();
 				})
 
-				$(document).on('contextmenu', '.cvc-file-info', function(e) {
+				$(frame).on('contextmenu', '.cvc-file-info', function(e) {
 					e.preventDefault();
 					let file = $(this).data('link');
 					self.context(this, file, e.clientX, e.clientY);
 				});
 
-				$(document).on('submit', '.cvc-create-folder-frm', function(e) {
+				$(frame).on('submit', '.cvc-create-folder-frm', function(e) {
 					e.preventDefault();
 					self.create_folder($(this).closest('.cvc-modal-modal'),
 						$(this).find('input[name=name]').val(),
