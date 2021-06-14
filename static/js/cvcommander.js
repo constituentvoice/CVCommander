@@ -132,7 +132,12 @@
 					.append($('<i>').addClass(this._fa_base_class + ' fa-sm ' + this.options.fa_icons.closeCommander))
 			);
 
-			let $path_btns = $('<span>').addClass('cvc-path-btns')
+			let $path_btns = $('<div>').addClass('cvc-path-btns dropdown').append(
+				$('<button>').addClass('btn btn-sm btn-default dropdown-toggle disabled').attr({
+					type: 'button', id: 'cvc-pathtree', 'aria-haspopup': 'dropdown', 'data-toggle': 'dropdown'
+				}).text('[root]/'),
+				$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-pathtree')
+			);
 
 			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
 				$('<div>').addClass('btn-group').append(
@@ -437,24 +442,42 @@
 			let viewtype = options.view || listpane.data('view') || 'icons';
 			listpane.data('view', viewtype);
 
+			let f_name = '[root]/';
+			if(folder !== '/') {
+				f_name = folder + '/';
+			}
+
 			let $path_btns = listpane.closest('.cvc-modal-body').find('.cvc-path-btns');
-			$path_btns.empty().append(
-				$('<a>').attr('href', '#').addClass('btn btn-default btn-sm cvview').data('folder', '/').append(
-					$('<span>').addClass('cvc-folder').append(
-						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.folder)
-					), ' ', '[root]/'
-				)
-			);
+			$path_btns.find('.dropdown-toggle').empty().append(
+				$('<span>').addClass('cvc-folder').append(
+					$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.folder)
+				),
+				' ' + f_name
+			)
+
 			let build_path = '';
 			let paths = folder.split('/');
+
+			$path_btns.find('.dropdown-menu').empty().append(
+				$('<a>').attr('href', '#').addClass('dropdown-item cvview').append(
+					$('<span>').addClass('cvc-folder').append(
+						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.folder)
+					),
+					' [root]/'
+				)
+			)
 
 			$.each(paths, function(idx, path) {
 				if(path && path !== '/') {
 					path += '/'
 
 					build_path += path;
-					$path_btns.append(
-						$('<a>').attr('href', '#').addClass('btn btn-default btn-sm cvview').data(
+					let active = '';
+					if(path === folder) {
+						active = ' active'
+					}
+					$path_btns.find('.dropdown-menu').append(
+						$('<a>').attr('href', '#').addClass('dropdown-item cvview' + active).data(
 							'folder', build_path).append(
 							$('<span>').addClass('cvc-folder').append(
 								$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.folder)
@@ -464,7 +487,9 @@
 					)
 				}
 			});
+			$path_btns.find('.dropdown-toggle').removeClass('disabled');
 			$('.cvview').removeClass('disabled');
+
 			if(options.view && options.view !== listpane.data('view')) {
 				refresh = true;
 			}

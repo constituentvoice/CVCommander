@@ -38,10 +38,10 @@ a.btn {
 }
 
 #cvc-container .modal-header {
-	background-color: #666666;
+	/*background-color: #666666;*/
 	color: white;
 	padding-bottom: 0px;
-	border-bottom: 0px;
+	border-bottom: 1px solid #ccc;
 }
 
 #cvc-container .modal-header>.nav-tabs {
@@ -189,4 +189,8 @@ a.btn {
 
 .cvc-modal-modal-content {
 	box-shadow: 5px 5px 10px #333;
+}
+
+.cvc-path-btns {
+	display: inline-block;
 }
