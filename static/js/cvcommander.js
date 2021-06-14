@@ -31,6 +31,8 @@
 				createFolder: 'fa-folder-plus',
 				browse: 'fa-folder-open',
 				upload: 'fa-cloud-upload',
+				home: 'fa-home',
+				folderBack: 'fa-arrow-left'
 
 			},
 			error: function(msg) { console.log(msg); },
@@ -132,11 +134,19 @@
 					.append($('<i>').addClass(this._fa_base_class + ' fa-sm ' + this.options.fa_icons.closeCommander))
 			);
 
-			let $path_btns = $('<div>').addClass('cvc-path-btns dropdown').append(
-				$('<button>').addClass('btn btn-sm btn-default dropdown-toggle disabled').attr({
-					type: 'button', id: 'cvc-pathtree', 'aria-haspopup': 'dropdown', 'data-toggle': 'dropdown'
-				}).text('[root]/'),
-				$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-pathtree')
+			let $path_btns = $('<div>').addClass('btn-group btn-group-sm').append(
+				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvview').data('folder', '/').append(
+					$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.home)
+				),
+				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvc-back cvview disabled').append(
+					$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderBack)
+				),
+				$('<div>').addClass('cvc-path-btns btn-group').append(
+					$('<button>').addClass('btn btn-sm btn-default dropdown-toggle disabled').attr({
+						type: 'button', id: 'cvc-pathtree', 'aria-haspopup': 'dropdown', 'data-toggle': 'dropdown'
+					}).text('[root]/'),
+					$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-pathtree')
+				)
 			);
 
 			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
@@ -457,6 +467,13 @@
 
 			let build_path = '';
 			let paths = folder.split('/');
+			let prev_path = paths[paths.length - 2];
+			if(typeof prev_path === 'undefined') {
+				listpane.closest('.cvc-modal-body').find('.cvc-back').addClass('disabled')
+			}
+			else {
+				listpane.closest('.cvc-modal-body').find('.cvc-back').removeClass('disabled').data('folder', prev_path);
+			}
 
 			$path_btns.find('.dropdown-menu').empty().append(
 				$('<a>').attr('href', '#').addClass('dropdown-item cvview').append(
@@ -797,7 +814,7 @@
 		},
 		usefile: function(obj, file) {
 			$('#cvc-view-file').empty().hide();
-			this.list('/')
+			// this.list('/')
 			this.$elem.val(file);
 			this.close_browser();
 		},
@@ -810,7 +827,7 @@
 			})
 		},
 		close_browser: function(obj) {
-			this.list('/');
+			// this.list('/');
 			$('#cvc-container').modal('hide');
 		},
 		open_browser: function(obj) {
