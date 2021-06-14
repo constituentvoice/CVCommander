@@ -152,6 +152,26 @@ a.btn {
 	color: deepskyblue;
 }
 
+.cvc-select-color {
+	color: green;
+}
+
+.cvc-view-color {
+	color: darkblue;
+}
+
+.cvc-copy-color {
+	color: black;
+}
+
+.cvc-move-color {
+	color: black;
+}
+
+.cvc-trash-color {
+	color: darkred;
+}
+
 .cvc-selected {
 	background-color: #ddd;
 }

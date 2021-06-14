@@ -147,30 +147,37 @@
 				$path_btns,
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$('<a>').attr('href', '#').addClass('btn btn-sm btn-default cvc-create-folder').append(
-					$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder),
+					$('<span>').addClass('cvc-folder').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder)
+					),
 					' Create Folder'
 				),
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$('<div>').addClass('btn-group').append(
-					$('<a>').attr({href: '#', name: 'Use'}).addClass(
-						'btn btn-sm btn-light cvc-use disabled cvc-file-opt').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.useFile)
+					$('<a>').attr({href: '#', name: 'Use'}).addClass('btn btn-sm btn-light cvc-use disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-select-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.useFile)
+						)
 					),
-					$('<a>').attr({href: '#', name: 'Preview'}).addClass(
-						'btn btn-sm btn-light cvc-view disabled cvc-file-opt').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.viewFile)
+					$('<a>').attr({href: '#', name: 'Preview'}).addClass('btn btn-sm btn-light cvc-view disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-view-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.viewFile)
+						)
 					),
-					$('<a>').attr({href: '#', name: 'Copy'}).addClass(
-						'btn btn-sm btn-light cvc-copy disabled cvc-file-opt').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.copyFile)
+					$('<a>').attr({href: '#', name: 'Copy'}).addClass('btn btn-sm btn-light cvc-copy disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-copy-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.copyFile)
+						)
 					),
-					$('<a>').attr({href: '#', name: 'Move'}).addClass(
-						'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.moveFile)
+					$('<a>').attr({href: '#', name: 'Move'}).addClass( 'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-move-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.moveFile)
+						)
 					),
-					$('<a>').attr({href: '#', name: 'Delete'}).addClass(
-						'btn btn-sm btn-light cvc-delete disabled cvc-file-opt').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.deleteFile)
+					$('<a>').attr({href: '#', name: 'Delete'}).addClass( 'btn btn-sm btn-light cvc-delete disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-trash-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.deleteFile)
+						)
 					)
 				)
 
@@ -423,6 +430,7 @@
 		},
 		list:function(folder, refresh, options) {
 			$('#cvclistcontent').show();
+			$('#cvclist-toolbar .cvc-file-opt').addClass('disabled');
 			let self = this;
 			options = options || {};
 			let listpane = this.frame.find('#cvclistcontent');
@@ -735,7 +743,7 @@
 			$('.cvc-selected').removeClass('cvc-selected');
 
 			$(obj).addClass('cvc-selected');
-			$('.cvc-file-opt').each(function(idx) {
+			$('#cvclist-toolbar').find('.cvc-file-opt').each(function(idx) {
 				$(this).data({filedom: obj, link: file, icon_data: $(obj).data('icon_data')}).removeClass('disabled')
 			})
 		},
