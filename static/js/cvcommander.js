@@ -150,7 +150,7 @@
 					$('<span>').addClass('cvc-folder').append(
 						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder)
 					),
-					' Create Folder'
+					' New Folder'
 				),
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$('<div>').addClass('btn-group').append(
@@ -621,7 +621,7 @@
 		},
 		create_folder_modal: function(path) {
 			let self = this;
-			this._modal_modal('Create Folder',
+			this._modal_modal('New Folder',
 				$('<form>').addClass('cvc-create-folder-frm').append(
 					$('<input>').attr({type: 'hidden', name: 'path'}).val(path),
 					$('<div>').addClass('form-group').append(
@@ -667,6 +667,31 @@
 					}
 				}
 			});
+		},
+		copy_modal: function(obj) {
+			let self = this;
+			let icon_data = $(obj).data('icon_data');
+			let path = icon_data.full_path;
+			self._modal_modal('Copy ' + icon_data.name,
+				$('<form>').addClass('cvc-copy-file-form').append(
+					$('<input>').attr({type: 'hidden', name: 'path'}).val(path),
+					$('<div>').addClass('form-group').append(
+						$('<label>').text('Name: '),
+						$('<input>').attr('name', 'name').addClass('form-control')
+					),
+					$('<div>').addClass('text-center').append(
+						$('<button>').attr('type', 'submit').addClass('btn btn-primary').append(
+							$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.copyFile),
+							' Copy'
+						),
+						'&nbsp;',
+						$('<button>').attr('type', 'button').addClass('btn btn-default cvc-cancel-model2x').append(
+							$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.closeView),
+							' Cancel'
+						)
+					)
+				)
+			)
 		},
 		copy: function(obj, file, dest) {
 		},
@@ -794,6 +819,11 @@
 					e.preventDefault();
 					self.create_folder_modal($('#cvclistview').data('folder') || '/');
 				});
+
+				$(frame).on('click', '.cvc-copy', function(e) {
+					e.preventDefault();
+					self.copy_modal($(this).data('filedom'));
+				})
 
 				$(document).on('dragenter','#cvclistview', function(e) {
 					_clean_event(e);
