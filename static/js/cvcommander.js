@@ -362,7 +362,7 @@
 				ico_cls += ' cvview';
 			}
 			else {
-				ico_cls += 'cvc-file-info';
+				ico_cls += ' cvc-file-info';
 			}
 
 			if(view_type === 'icons') {
@@ -427,6 +427,7 @@
 			options = options || {};
 			let listpane = this.frame.find('#cvclistcontent');
 			let viewtype = options.view || listpane.data('view') || 'icons';
+			listpane.data('view', viewtype);
 
 			let $path_btns = listpane.closest('.cvc-modal-body').find('.cvc-path-btns');
 			$path_btns.empty().append(
@@ -777,7 +778,8 @@
 				$(document).on('click', '.cvview', function(e) {
 					e.preventDefault();
 					let folder = $(this).data('folder') || '/';
-					self.list(folder, true, {view:$(this).data('view-type')})
+					let viewtype = $(this).data('view-type') || self.frame.find('#cvclistcontent').data('view') || 'icons';
+					self.list(folder, true, {view: viewtype})
 				});
 
 				$(document).on('click', '.cvc-create-folder', function(e) {
