@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from werkzeug.utils import secure_filename
 from traceback import format_exc
 import mimetypes
-
+import shutil
 
 import os
 from flask import (
@@ -94,3 +94,38 @@ def create_folder():
         abort(400, "Folder already exists")
 
     return jsonify({'status': 'OK'})
+
+
+@cvc.route('/copy', methods=['POST'])
+def copy_file():
+    data = request.get_json()
+    dest = data.get('dest')
+    file_data = data.get('file_data')
+    filename = file_data.get('name')
+
+    if dest and dest != '/':
+        new_path = os.path.join(dest, filename)
+    else:
+        new_path = filename
+        dest = ''
+
+    new_full_path = os.path.join('static', 'uploads', new_path)
+    old_full_path = os.path.join('static', 'uploads', file_data.get('full_path'))
+
+    if os.path.exists(new_full_path):
+        filename = f'Copy_of_{filename}'
+        if dest:
+            new_path = os.path.join(dest, filename)
+        else:
+            new_path = filename
+        new_full_path = os.path.join('static', 'uploads', new_path)
+
+    try:
+        shutil.copyfile(old_full_path, new_full_path)
+        new_url = url_for('static', filename=new_path)
+        output = {'status': 'OK', 'file': new_url}
+    except IOError:
+        current_app.logger.debug('failed', exc_info=True)
+        output = {'status': 'error'}
+
+    return jsonify(output)

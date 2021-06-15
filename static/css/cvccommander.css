@@ -38,9 +38,8 @@ a.btn {
 }
 
 #cvc-container .modal-header {
-	/*background-color: #666666;*/
 	color: white;
-	padding-bottom: 0px;
+	padding-bottom: 0;
 	border-bottom: 1px solid #ccc;
 }
 

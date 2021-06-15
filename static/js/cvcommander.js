@@ -8,6 +8,8 @@
 			allow_inline_drop: true,
 			list_files_url: '/cvc/list',
 			create_folder_url: '/cvc/create/folder',
+			copy_file_url: '/cvc/copy',
+			move_file_url: '/cvc/move',
 			path: '/',
 			modal: true,
 			modal_css: null,
@@ -26,6 +28,7 @@
 				copyFile: 'fa-copy',
 				moveFile: 'fa-arrows-alt',
 				deleteFile: 'fa-trash-alt',
+				pasteFile: 'fa-paste',
 				closeView: 'fa-window-close',
 				folder: 'fa-folder',
 				createFolder: 'fa-folder-plus',
@@ -146,7 +149,12 @@
 						type: 'button', id: 'cvc-pathtree', 'aria-haspopup': 'dropdown', 'data-toggle': 'dropdown'
 					}).text('[root]/'),
 					$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-pathtree')
-				)
+				),
+				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvc-create-folder').append(
+					$('<span>').addClass('cvc-folder').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder)
+					),
+				),
 			);
 
 			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
@@ -160,13 +168,6 @@
 				),
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$path_btns,
-				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
-				$('<a>').attr('href', '#').addClass('btn btn-sm btn-default cvc-create-folder').append(
-					$('<span>').addClass('cvc-folder').append(
-						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder)
-					),
-					' New Folder'
-				),
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$('<div>').addClass('btn-group').append(
 					$('<a>').attr({href: '#', name: 'Use'}).addClass('btn btn-sm btn-light cvc-use disabled cvc-file-opt').append(
@@ -184,7 +185,12 @@
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.copyFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Move'}).addClass( 'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', name: 'Paste'}).addClass('btn btn-sm btn-light cvc-paste disabled cvc-file-opt').append(
+						$('<span>').addClass('cvc-paste-color').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.pasteFile)
+						)
+					),
+					$('<a>').attr({href: '#', name: 'Rename'}).addClass( 'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-move-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.moveFile)
 						)
@@ -457,6 +463,7 @@
 				f_name = folder + '/';
 			}
 
+			// set the path button paths
 			let $path_btns = listpane.closest('.cvc-modal-body').find('.cvc-path-btns');
 			$path_btns.find('.dropdown-toggle').empty().append(
 				$('<span>').addClass('cvc-folder').append(
@@ -475,6 +482,7 @@
 				listpane.closest('.cvc-modal-body').find('.cvc-back').removeClass('disabled').data('folder', prev_path);
 			}
 
+			// make sure the tree is empty and starts with root
 			$path_btns.find('.dropdown-menu').empty().append(
 				$('<a>').attr('href', '#').addClass('dropdown-item cvview').append(
 					$('<span>').addClass('cvc-folder').append(
@@ -484,6 +492,7 @@
 				)
 			)
 
+			// set tree paths
 			$.each(paths, function(idx, path) {
 				if(path && path !== '/') {
 					path += '/'
@@ -504,8 +513,20 @@
 					)
 				}
 			});
+
+			// enable the dropdown
 			$path_btns.find('.dropdown-toggle').removeClass('disabled');
-			$('.cvview').removeClass('disabled');
+			$(self.frame).find('.cvview').removeClass('disabled');
+
+			// set the paste button path
+			$(self.frame).find('.cvc-paste').data('folder', folder);
+
+			// if we have a copied file, enable the paste button
+			console.log(self.copied_file);
+			if(self.copied_file) {
+				console.log($(self.frame))
+				$(self.frame).find('.cvc-paste').removeClass('disabled');
+			}
 
 			if(options.view && options.view !== listpane.data('view')) {
 				refresh = true;
@@ -696,18 +717,33 @@
 				)
 			)
 		},
+		cvc_alert: function(sel, msg, options) {
+			console.log(sel);
+
+			let defaults = {
+				timeout: 0,
+				type: 'danger'
+			};
+			let aconfig = $.extend({}, defaults, options);
+			$(sel).prepend(
+				$('<div>').addClass('alert alert-' + aconfig.type).text(msg)
+			);
+			if(aconfig.timeout > 0) {
+				setTimeout(function() {
+					$(sel).find('.alert').fadeOut(500, function() {
+						$(this).remove();
+					})
+				}, aconfig.timeout)
+			}
+		},
 		create_folder: function($mm, name, path) {
 			let self = this;
-			const folder_error = function(msg) {
-				$mm.find('.' + self.bs_body_class).prepend(
-					$('<div>').addClass('alert alert-danger').text(msg)
-				)
-			}
+			let $sel = $mm.find('.cvc-modal-modal-content').find(self.bs_body_class)
 			$.ajax(self.options.create_folder_url, {
 				contentType: 'application/json;charset=UTF-8',
 				data: JSON.stringify({name: name, path: path}),
 				error: function(jqxhr, textstatus, err) {
-					folder_error(textstatus)
+					self.cvc_alert($sel, textstatus)
 					console.log(err)
 				},
 				method: 'POST',
@@ -717,37 +753,58 @@
 						self.list(path, true);
 					}
 					else {
-						folder_error('Bad status when creating folder.')
+						self.cvc_alert($sel, 'Bad status when creating folder.')
 					}
 				}
 			});
 		},
-		copy_modal: function(obj) {
+		copy: function(obj) {
 			let self = this;
-			let icon_data = $(obj).data('icon_data');
-			let path = icon_data.full_path;
-			self._modal_modal('Copy ' + icon_data.name,
-				$('<form>').addClass('cvc-copy-file-form').append(
-					$('<input>').attr({type: 'hidden', name: 'path'}).val(path),
-					$('<div>').addClass('form-group').append(
-						$('<label>').text('Name: '),
-						$('<input>').attr('name', 'name').addClass('form-control')
-					),
-					$('<div>').addClass('text-center').append(
-						$('<button>').attr('type', 'submit').addClass('btn btn-primary').append(
-							$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.copyFile),
-							' Copy'
-						),
-						'&nbsp;',
-						$('<button>').attr('type', 'button').addClass('btn btn-default cvc-cancel-model2x').append(
-							$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.closeView),
-							' Cancel'
-						)
-					)
-				)
-			)
+			self.copied_file = $(obj).data('icon_data');
+			$(self.frame).find('.cvc-paste').removeClass('disabled');
+			self.cvc_alert($(self.frame).find('.cvc-modal-body'), 'Copied!', {
+				type: 'success',
+				timeout: 3000
+			})
 		},
-		copy: function(obj, file, dest) {
+		safe_file_name: function(file) {
+			// todo this is not at all perfect but will be a start
+			return file.replace(/[^A-Za-z0-0\-\@=\s_]+/, '_');
+		},
+		paste: function(path) {
+			let self = this;
+			console.log(self.copied_file);
+			if(self.copied_file) {
+				let $sel = $(self.frame).find('.cvc-modal-body');
+				$.ajax(self.options.copy_file_url, {
+					contentType: 'application/json;charset=UTF-8',
+					data: JSON.stringify({dest: path, file_data: self.copied_file}),
+					error: function(jqxhr, textstatus, err) {
+						self.cvc_alert($sel, textstatus || 'unable to paste', {timeout: 3000});
+						console.log(err);
+					},
+					method: 'POST',
+					success: function(output) {
+						console.log(output);
+						if(output.status === 'OK') {
+							self.copied_file = null;
+							self.list(path, true, {
+								refresh_callback: function(_files) {
+									$('.cvc-file').each(function(idx) {
+										if($(this).data('link') === output.file) {
+											self.select(this, output.file)
+										}
+									})
+								}
+							});
+							self.cvc_alert($(self.frame).find('.cvc-modal-body'), 'Pasted!', {type: 'success'})
+						}
+						else {
+							self.cvc_alert($sel, 'Bad status when pasting file')
+						}
+					}
+				});
+			}
 		},
 		move: function(obj, file, dest) {
 		},
@@ -779,11 +836,11 @@
 						self.mk_context_action('#', 'cvc-use', 'Use', self.options.fa_icons.useFile, obj, file),
 						self.mk_context_action('#', 'cvc-view', 'Preview', self.options.fa_icons.viewFile, obj, file),
 						self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file),
-						self.mk_context_action('#', 'cvc-move', 'Move', self.options.fa_icons.moveFile, obj, file),
+						self.mk_context_action('#', 'cvc-move', 'Rename', self.options.fa_icons.moveFile, obj, file),
 						self.mk_context_action('#', 'cvc-delete', 'Delete', self.options.fa_icons.deleteFile, obj, file)
 					)
 			);
-			$('body').append(ctx_menu);
+			$(self.frame).append(ctx_menu);
 		},
 		view: function(obj, file) {
 			let self = this;
@@ -819,11 +876,14 @@
 			this.close_browser();
 		},
 		select: function(obj, file) {
+			let self = this;
 			$('.cvc-selected').removeClass('cvc-selected');
 
 			$(obj).addClass('cvc-selected');
 			$('#cvclist-toolbar').find('.cvc-file-opt').each(function(idx) {
-				$(this).data({filedom: obj, link: file, icon_data: $(obj).data('icon_data')}).removeClass('disabled')
+				if(($(this).hasClass('cvc-paste') && self.copied_file) || !$(this).hasClass('cvc-paste')) {
+					$(this).data({filedom: obj, link: file, icon_data: $(obj).data('icon_data')}).removeClass('disabled')
+				}
 			})
 		},
 		close_browser: function(obj) {
@@ -876,7 +936,7 @@
 
 				$(frame).on('click', '.cvc-copy', function(e) {
 					e.preventDefault();
-					self.copy_modal($(this).data('filedom'));
+					self.copy($(this).data('filedom'));
 				})
 
 				$(frame).on('dragenter','#cvclistview', function(e) {
@@ -948,7 +1008,14 @@
 						$(this).find('input[name=name]').val(),
 						$(this).find('input[name=path]').val()
 					)
-				})
+				});
+
+				$(frame).on('click', '.cvc-paste', function(e) {
+					e.preventDefault();
+					if(self.copied_file) {
+						self.paste($(this).data('folder') || '/')
+					}
+				});
 
 				$('#cvc-container').modal('show');
 				self.frame = frame;
@@ -973,7 +1040,7 @@
 
 		let results = [];
 		this.each( function() {
-			if($(this).data('cvcommander') && method == 'init') {
+			if($(this).data('cvcommander') && method === 'init') {
 				method = 'open_browser';
 			}
 
