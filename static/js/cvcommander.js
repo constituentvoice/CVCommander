@@ -753,7 +753,7 @@
 						self.list(path, true);
 					}
 					else {
-						self.cvc_alert($sel, 'Bad status when creating folder.')
+						self.cvc_alert($sel, output.message || 'Bad status when creating folder.')
 					}
 				}
 			});
@@ -800,7 +800,7 @@
 							self.cvc_alert($(self.frame).find('.cvc-modal-body'), 'Pasted!', {type: 'success'})
 						}
 						else {
-							self.cvc_alert($sel, 'Bad status when pasting file')
+							self.cvc_alert($sel, output.message || 'Bad status when pasting file')
 						}
 					}
 				});

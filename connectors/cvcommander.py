@@ -112,20 +112,30 @@ def copy_file():
     new_full_path = os.path.join('static', 'uploads', new_path)
     old_full_path = os.path.join('static', 'uploads', file_data.get('full_path'))
 
-    if os.path.exists(new_full_path):
-        filename = f'Copy_of_{filename}'
-        if dest:
-            new_path = os.path.join(dest, filename)
+    count = 0
+    while count < 8 and os.path.exists(new_full_path):
+        count += 1
+        if count > 1:
+            final_file = f'Copy_{count}_of_{filename}'
         else:
-            new_path = filename
+            final_file = f'Copy_of_{filename}'
+
+        if dest:
+            new_path = os.path.join(dest, final_file)
+        else:
+            new_path = final_file
+
         new_full_path = os.path.join('static', 'uploads', new_path)
 
-    try:
-        shutil.copyfile(old_full_path, new_full_path)
-        new_url = url_for('static', filename=new_path)
-        output = {'status': 'OK', 'file': new_url}
-    except IOError:
-        current_app.logger.debug('failed', exc_info=True)
-        output = {'status': 'error'}
+    if count >= 8:
+        output = {'status': 'error', 'message': 'Too many copies!'}
+    else:
+        try:
+            shutil.copyfile(old_full_path, new_full_path)
+            new_url = url_for('static', filename=new_path)
+            output = {'status': 'OK', 'file': new_url}
+        except IOError:
+            current_app.logger.debug('failed', exc_info=True)
+            output = {'status': 'error', 'message': 'failed to create copy'}
 
     return jsonify(output)
