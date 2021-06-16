@@ -458,6 +458,9 @@
 			let viewtype = options.view || listpane.data('view') || 'icons';
 			listpane.data('view', viewtype);
 
+			self.selected = null;
+			self.current_folder = folder;
+
 			let f_name = '[root]/';
 			if(folder !== '/') {
 				f_name = folder + '/';
@@ -831,6 +834,10 @@
 							}
 						}
 					})
+				}).on('keyup', function(e) {
+					if(e.which === 13) {
+						$(this).trigger('blur');
+					}
 				})
 			);
 			$fname_sel.find('input').trigger('focus').trigger('select')
@@ -912,6 +919,7 @@
 					$(this).data({filedom: obj, link: file, icon_data: $(obj).data('icon_data')}).removeClass('disabled')
 				}
 			})
+			self.selected = $(obj);
 		},
 		close_browser: function(obj) {
 			// this.list('/');
@@ -1048,6 +1056,15 @@
 					e.preventDefault();
 					self.rename($(this).data('filedom'));
 				});
+
+				$(document).on('keydown', function(e) {
+					if(self.selected && e.which === 67 && (e.metaKey || e.ctrlKey)) {
+						self.copy(self.selected);
+					}
+					else if(self.copied_file && e.which === 86 && (e.metaKey || e.ctrlKey)) {
+						self.paste(self.current_folder);
+					}
+				})
 
 				$('#cvc-container').modal('show');
 				self.frame = frame;
