@@ -9,7 +9,7 @@
 			list_files_url: '/cvc/list',
 			create_folder_url: '/cvc/create/folder',
 			copy_file_url: '/cvc/copy',
-			move_file_url: '/cvc/move',
+			rename_file_url: '/cvc/rename',
 			path: '/',
 			modal: true,
 			modal_css: null,
@@ -790,7 +790,7 @@
 							self.copied_file = null;
 							self.list(path, true, {
 								refresh_callback: function(_files) {
-									$('.cvc-file').each(function(idx) {
+									$('.cvc-file-info').each(function(idx) {
 										if($(this).data('link') === output.file) {
 											self.select(this, output.file)
 										}
@@ -806,7 +806,34 @@
 				});
 			}
 		},
-		move: function(obj, file, dest) {
+		rename: function(obj) {
+			let self = this;
+			let $fname_sel = $(obj).find('.cvc-f-name');
+			let fname = $fname_sel.text();
+			$fname_sel.empty().append(
+				$('<input>').attr({name: 'new-name', type: 'text'}).val(fname).on('blur', function(e) {
+					e.preventDefault();
+					$.ajax(self.options.rename_file_url, {
+						contentType: 'application/json;charset=UTF-8',
+						data: JSON.stringify({file_data: $(obj).data('icon_data'), new_name: $(this).val()}),
+						error: function(jqxhr, textstatus, err) {
+							console.log(err);
+							self.cvc_alert($(self.frame).find('.cvc-modal-body'), textstatus);
+						},
+						method: 'POST',
+						success: function(output) {
+							if(output.status === 'OK') {
+								$fname_sel.empty().text(output.new_name)
+								self.select(obj, output.link);
+							}
+							else {
+								self.cvc_alert($(self.frame).find('.cvc-modal-body'), output.message || 'Unable to rename file.');
+							}
+						}
+					})
+				})
+			);
+			$fname_sel.find('input').trigger('focus').trigger('select')
 		},
 		remove: function(obj, file) {
 		},
@@ -853,7 +880,7 @@
 				$('<div>').append(
 					self.mk_context_action('#', 'cvc-use', 'Use', self.options.fa_icons.useFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file, 'preview'),
-					self.mk_context_action('#', 'cvc-move', 'Move', self.options.fa_icons.moveFile, obj, file, 'preview'),
+					self.mk_context_action('#', 'cvc-move', 'Rename', self.options.fa_icons.moveFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvc-delete', 'Delete', self.options.fa_icons.deleteFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvview', 'Close Preview', self.options.fa_icons.closeView, obj, file, 'preview')
 				),
@@ -1015,6 +1042,11 @@
 					if(self.copied_file) {
 						self.paste($(this).data('folder') || '/')
 					}
+				});
+
+				$(frame).on('click', '.cvc-move', function(e) {
+					e.preventDefault();
+					self.rename($(this).data('filedom'));
 				});
 
 				$('#cvc-container').modal('show');

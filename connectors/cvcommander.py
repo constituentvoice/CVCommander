@@ -132,10 +132,35 @@ def copy_file():
     else:
         try:
             shutil.copyfile(old_full_path, new_full_path)
-            new_url = url_for('static', filename=new_path)
+            new_url = url_for('static', filename=os.path.join('uploads', new_path), _external=True)
             output = {'status': 'OK', 'file': new_url}
         except IOError:
             current_app.logger.debug('failed', exc_info=True)
             output = {'status': 'error', 'message': 'failed to create copy'}
 
     return jsonify(output)
+
+
+@cvc.route('/rename', methods=['POST'])
+def rename_file():
+    data = request.get_json();
+    file_data = data.get('file_data')
+    new_name = secure_filename(data.get('new_name'))
+    # get rid of paths. They arent valid
+    new_name = os.path.basename(new_name)
+    old_full_path = os.path.join('static', 'uploads', file_data.get('full_path'))
+    new_name_path = os.path.join(os.path.dirname(old_full_path), new_name)
+    web_path = os.path.basename(file_data.get('full_path'))
+    if os.path.exists(new_name_path):
+        output = {'status': 'error', 'message': f'{new_name} already exists!'}
+    else:
+        try:
+            os.rename(old_full_path, new_name_path)
+            output = {'status': 'OK', 'link': url_for('static', filename=os.path.join('uploads', web_path, new_name),
+                                                      _external=True), 'new_name': new_name}
+        except (IOError, OSError):
+            output = {'status': 'error', 'message': 'Unable to rename the file'}
+    return jsonify(output)
+
+
+
