@@ -629,7 +629,7 @@
 					if(data.files.length > 0) {
 						_uploaded = data.files[0];
 					}
-					self.list('/', true, {
+					self.list(self.current_folder || '/', true, {
 						refresh_callback: function(_files) {
 							$('.cvc-file').each(function(idx) {
 								if($(this).data('link') === _uploaded) {
@@ -673,7 +673,7 @@
 					}
 					return xhrobj;
 				},
-				url: self.options.upload_url,
+				url: self.options.upload_url + '?path=' + self.current_folder,
 				type: 'POST',
 				contentType: false,
 				processData: false,

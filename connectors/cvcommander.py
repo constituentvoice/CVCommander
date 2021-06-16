@@ -61,6 +61,7 @@ def list_files():
 
 @cvc.route('/upload', methods=['POST'])
 def upload_file():
+    path = request.args.get('path')
     try:
         output_data = []
         for k in request.files.keys():
@@ -70,7 +71,15 @@ def upload_file():
                 continue
 
             filename = secure_filename(f.filename)
-            f.save(os.path.join('static', 'uploads', filename))
+            path_args = ['static', 'uploads']
+            if path and path != '/':
+                path_args.append(path)
+
+            if not os.path.exists(os.path.join(*path_args)):
+                return jsonify({'status': 'error', 'message': 'Selected path doesnt exist on the server'}), 400
+
+            path_args.append(filename)
+            f.save(os.path.join(*path_args))
             output_data.append(url_for('static', filename='uploads/' + filename, _external=True))
             return jsonify({'files': output_data})
     except:
