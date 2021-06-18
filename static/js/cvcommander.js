@@ -918,7 +918,7 @@
 		},
 		usefile: function(obj, file) {
 			$('#cvc-view-file').empty().hide();
-			// this.list('/')
+			this.list(this.current_folder || '/')
 			this.$elem.val(file);
 			this.close_browser();
 		},
