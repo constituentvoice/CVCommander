@@ -917,6 +917,7 @@
 			).show();
 		},
 		usefile: function(obj, file) {
+			$('.cvc-selected').removeClass('cvc-selected');  // deslect the file
 			$('#cvc-view-file').empty().hide();
 			this.list(this.current_folder || '/')
 			this.$elem.val(file);
