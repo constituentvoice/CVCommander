@@ -41,7 +41,7 @@ def list_files():
         size = os.path.getsize(f_full_path)
         modified = os.path.getmtime(f_full_path)
         f_out = {
-            'url': url_for('static', filename=f'uploads/{f}', _external=True),
+            'url': url_for('static', filename=os.path.join('uploads', full_path), _external=True),
             'name': f,
             'size': size,
             'modified': int(modified),
