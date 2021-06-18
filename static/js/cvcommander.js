@@ -888,6 +888,8 @@
 					)
 			);
 			$(self.frame).append(ctx_menu);
+			// select the file too
+			self.select(obj, file);
 		},
 		view: function(obj, file) {
 			let self = this;
