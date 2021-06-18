@@ -1,3 +1,5 @@
+// noinspection JSDeprecatedSymbols
+
 ;(function( $, window, document, undefined ) {
 	let plugin_name = "cvCommander",
 		defaults = {
@@ -813,30 +815,41 @@
 			let self = this;
 			let $fname_sel = $(obj).find('.cvc-f-name');
 			let fname = $fname_sel.text();
+			const reset_input = function(name) {
+				$fname_sel.empty().text(name || fname);
+			};
 			$fname_sel.empty().append(
 				$('<input>').attr({name: 'new-name', type: 'text'}).val(fname).on('blur', function(e) {
 					e.preventDefault();
-					$.ajax(self.options.rename_file_url, {
-						contentType: 'application/json;charset=UTF-8',
-						data: JSON.stringify({file_data: $(obj).data('icon_data'), new_name: $(this).val()}),
-						error: function(jqxhr, textstatus, err) {
-							console.log(err);
-							self.cvc_alert($(self.frame).find('.cvc-modal-body'), textstatus);
-						},
-						method: 'POST',
-						success: function(output) {
-							if(output.status === 'OK') {
-								$fname_sel.empty().text(output.new_name)
-								self.select(obj, output.link);
+					if($(this).val() === fname) {
+						reset_input();
+					}
+					else {
+						$.ajax(self.options.rename_file_url, {
+							contentType: 'application/json;charset=UTF-8',
+							data: JSON.stringify({file_data: $(obj).data('icon_data'), new_name: $(this).val()}),
+							error: function (jqxhr, textstatus, err) {
+								console.log(err);
+								self.cvc_alert($(self.frame).find('.cvc-modal-body'), textstatus);
+							},
+							method: 'POST',
+							success: function (output) {
+								if (output.status === 'OK') {
+									reset_input(output.new_name);
+									self.select(obj, output.link);
+								} else {
+									self.cvc_alert($(self.frame).find('.cvc-modal-body'),
+										output.message || 'Unable to rename file.');
+								}
 							}
-							else {
-								self.cvc_alert($(self.frame).find('.cvc-modal-body'), output.message || 'Unable to rename file.');
-							}
-						}
-					})
+						})
+					}
 				}).on('keyup', function(e) {
-					if(e.which === 13) {
+					if(e.which === 13) {  // Enter
 						$(this).trigger('blur');
+					}
+					else if(e.which === 27) {  // escape
+						reset_input();
 					}
 				})
 			);
@@ -1057,6 +1070,7 @@
 					self.rename($(this).data('filedom'));
 				});
 
+				// key events
 				$(document).on('keydown', function(e) {
 					if(self.selected && e.which === 67 && (e.metaKey || e.ctrlKey)) {
 						self.copy(self.selected);
