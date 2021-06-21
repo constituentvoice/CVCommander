@@ -937,6 +937,66 @@
 			})
 			self.selected = $(obj);
 		},
+		_find_select: function(current, direction) {
+			let currow = current.parent('.row');
+			let position = currow.find('.cvc-file').index(current) + 1;
+
+			let sel = null;
+			if(direction === 'up') {
+				let newrow = null;
+				if(currow.is($('#cvclistcontent').find('.row').first())) {
+					newrow = $('#cvclistcontent').find('.row').last();
+				}
+				else {
+					newrow = currow.prev('.row');
+				}
+
+				sel = newrow.find('.cvc-file:nth-child(' + position + ')');
+				if(sel.length < 1) {
+					sel = newrow.find('.cvc-file').last();
+				}
+			}
+			else if(direction === 'right') {
+				if(currow.find('.cvc-file').last().is(current)) {
+					if(currow.is($('#cvclistcontent').find('.row').last())) {
+						sel = $('#cvclistcontent').find('.row').find('.cvc-file').first();
+					}
+					else {
+						sel = currow.next('.row').find('.cvc-file').first();
+					}
+				}
+				else {
+					sel = current.next('.cvc-file');
+				}
+			}
+			else if(direction === 'down') {
+				let newrow = null;
+				if(currow.is($('#cvclistcontent').find('.row').last())) {
+					newrow = $('#cvclistcontent').find('.row').first();
+				}
+				else {
+					newrow = currow.next('.row');
+				}
+				sel = newrow.find('.cvc-file:nth-child(' + position + ')');
+				if(sel.length < 1) {
+					sel = newrow.find('.cvc-file').last();
+				}
+			}
+			else if(direction === 'left') {
+				if(currow.find('.cvc-file').first().is(current)) {
+					if(currow.is($('#cvclistcontent').find('.row').first())) {
+						sel = $('#cvclistcontent').find('.row').find('.cvc-file').last();
+					}
+					else {
+						sel = currow.prev('.row').find('.cvc-file').last();
+					}
+				}
+				else {
+					sel = current.prev('.cvc-file');
+				}
+			}
+			return sel;
+		},
 		close_browser: function(obj) {
 			// this.list('/');
 			$('#cvc-container').modal('hide');
@@ -1073,10 +1133,35 @@
 					self.rename($(this).data('filedom'));
 				});
 
-				// key events
+				// keyboard events
 				$(document).on('keydown', function(e) {
-					if(self.selected && e.which === 67 && (e.metaKey || e.ctrlKey)) {
-						self.copy(self.selected);
+					if(self.selected) {
+						if (e.which === 67 && (e.metaKey || e.ctrlKey)) {
+							self.copy(self.selected);
+						} else if(e.which === 13) {
+							if(self.selected.data('icon_data').type === 'dir') {
+								self.selected.trigger('click');
+							}
+							else {
+								self.view(self.selected, self.selected.data('link'));
+							}
+
+						} else {
+							let pfile = null;
+							if (e.which === 38 || e.which === 87) { // up or W
+								pfile = self._find_select(self.selected, 'up');
+							} else if (e.which === 39 || e.which === 68) {  // right arrow or D
+								pfile = self._find_select(self.selected, 'right');
+							} else if (e.which === 40 || e.which === 83) { // down arrow or S
+								pfile = self._find_select(self.selected, 'down')
+							} else if (e.which === 37 || e.which === 65) {  // left arrow or A
+								pfile = self._find_select(self.selected, 'left')
+							}
+
+							if (pfile) {
+								self.select(pfile, pfile.data('link'))
+							}
+						}
 					}
 					else if(self.copied_file && e.which === 86 && (e.metaKey || e.ctrlKey)) {
 						self.paste(self.current_folder);
