@@ -12,6 +12,7 @@
 			create_folder_url: '/cvc/create/folder',
 			copy_file_url: '/cvc/copy',
 			rename_file_url: '/cvc/rename',
+			remove_file_url: '/cvc/remove',
 			path: '/',
 			modal: true,
 			modal_css: null,
@@ -37,7 +38,9 @@
 				browse: 'fa-folder-open',
 				upload: 'fa-cloud-upload',
 				home: 'fa-home',
-				folderBack: 'fa-arrow-left'
+				folderBack: 'fa-arrow-left',
+				confirmYes: 'fa-check-circle',
+				confirmNo: 'fa-ban'
 
 			},
 			error: function(msg) { console.log(msg); },
@@ -855,7 +858,58 @@
 			);
 			$fname_sel.find('input').trigger('focus').trigger('select')
 		},
+		cvc_confirm: function(question, msg, options) {
+			let self = this;
+			let defaults = {
+				yes: function() {
+					$('.cvc-modal-modal').hide();
+					return true;
+				},
+				no: function() {
+					$('.cvc-modal-modal').hide();
+					return false;
+				}
+			};
+			options = $.extend(defaults, options || {});
+
+			let $content = $('<div>').append(
+				$('<div>').append(msg),
+				$('<div>').addClass('cvc-confirm-actions text-center').append(
+					$('<button>').attr('type', 'button').addClass('cvc-confirm-yes-btn btn btn-primary').append(
+						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.confirmYes),
+						' Yes'
+					),
+					$('<button>').attr('type', 'button').addClass('cvc-confirm-no-btn btn btn-default').append(
+						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.confirmNo),
+						' No'
+					)
+				)
+			);
+			$content.find('.cvc-confirm-yes-btn').on('click', options.yes);
+			$content.find('.cvc-confirm-no-btn').on('click', options.no);
+			this._modal_modal(question, $content);
+		},
 		remove: function(obj, file) {
+			let self = this;
+			self.cvc_confirm('Are you sure you want to remove ' + $(obj).data('icon_data').name + '?',
+				'Removing my cause links to break. Only proceed if you\'re sure!', {yes: function() {
+				$.ajax(self.options.remove_file_url, {
+					contentType: 'application/json;charset=UTF-8',
+					data: JSON.stringify({file_data: $(obj).data('icon_data')}),
+					error: function (jqxhr, textstatus, err) {
+						self.cvc_alert($(self.frame), textstatus);
+						console.log(err);
+					},
+					method: 'DELETE',
+					success: function(output) {
+						if(output.status === 'OK') {
+							$(obj).remove();
+							$('.cvc-modal-modal').hide();
+							self.list(self.current_folder, true);
+						}
+					}
+				})
+			}})
 		},
 		mk_context_action: function(_link, _class, _text, _icon, obj, file, _type) {
 			let class_type = 'list-group-item list-group-item-action';
@@ -1132,6 +1186,11 @@
 					e.preventDefault();
 					self.rename($(this).data('filedom'));
 				});
+
+				$(frame).on('click', '.cvc-delete', function(e) {
+					e.preventDefault();
+					self.remove($(this).data('filedom'), $(this).data('filedom').link);
+				})
 
 				// keyboard events
 				$(document).on('keydown', function(e) {

@@ -152,7 +152,7 @@ def copy_file():
 
 @cvc.route('/rename', methods=['POST'])
 def rename_file():
-    data = request.get_json();
+    data = request.get_json()
     file_data = data.get('file_data')
     new_name = secure_filename(data.get('new_name'))
     # get rid of paths. They arent valid
@@ -172,4 +172,19 @@ def rename_file():
     return jsonify(output)
 
 
+@cvc.route('/remove', methods=['DELETE'])
+def remove():
+    data = request.get_json()
+    file_data = data.get('file_data')
+    path = os.path.join('static', 'uploads', file_data.get('full_path'))
+    if os.path.exists(path):
+        try:
+            os.unlink(path)
+            output = {'status': 'OK'}
+        except (IOError, OSError):
+            output = {'status': 'error', 'message': 'Unable to delete the file.'}
 
+    else:
+        output = {'status': 'error', 'message': 'File does not exist'}
+
+    return jsonify(output)
