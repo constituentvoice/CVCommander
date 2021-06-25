@@ -43,7 +43,9 @@
 				confirmNo: 'fa-ban',
 				folderSort: 'fa-sort',
 				folderSortAsc: 'fa-sort-amount-up',
-				folderSortDesc: 'fa-sort-amount-down'
+				folderSortDesc: 'fa-sort-amount-down',
+				folderHeaderSortAsc: 'fa-sort-up',
+				folderHeaderSortDesc: 'fa-sort-down'
 			},
 			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
@@ -508,14 +510,33 @@
 			let listpane = this.frame.find('#cvclistcontent');
 			listpane.empty();
 			listpane.wrap('<div>').addClass('table-responsive');
+			let c_sort = self.current_list_options.sort;
+			let c_dir = self.current_list_options.dir;
 
-			let attach = $('<table>').addClass('table table-striped').append(
-				$('<tr>').append(
-					$('<th>').text('Name'),
-					$('<th>').text('Modified'),
-					$('<th>').text('Size')
+			let attach = $('<table>').addClass('table table-striped');
+			let header = $('<tr>');
+			$.each([{k: 'name', l: 'Name'}, {k: 'modified', l: 'Modified'}, {k:'size', l: 'Size'}], function(idx, obj) {
+				let toggle_class = self.options.fa_icons.folderSort;
+				if(obj.k === c_sort) {
+					if(c_dir === 'asc')	{
+						toggle_class = self.options.fa_icons.folderHeaderSortAsc;
+					}
+					else {
+						toggle_class = self.options.fa_icons.folderHeaderSortDesc;
+					}
+				}
+				header.append(
+					$('<th>').append(
+						$('<button>').addClass(
+							'btn btn-sm btn-block text-left cvc-sort-toggle'
+						).attr('type', 'button').data({sort: obj.k}).append(
+							$('<i>').addClass(self._fa_base_class + ' ' + toggle_class),
+							' ' + obj.l
+						)
+					),
 				)
-			);
+			});
+			attach.append(header);
 
 			$.each(files, function (idx, f) {
 				attach.append(self.create_icon(f, 'list'))
@@ -627,14 +648,6 @@
 			});
 
 			const process_file_list = function(files) {
-				let attach = listpane;
-				if(viewtype === 'icons') {
-					attach = listpane.find('.row').first();
-				}
-				else if(viewtype === 'list') {
-					attach = listpane.find('table').first();
-				}
-
 				files.sort(function(a, b) {
 					if(a[options.sort] < b[options.sort]) {
 						return options.dir === 'asc' ? -1 : 1;
@@ -679,7 +692,6 @@
 			else {
 				let file_list = [];
 				listpane.find('.cvc-file').each(function(idx) {
-					console.log(this);
 					file_list.push($(this).data('icon_data'));
 				});
 				process_file_list(file_list)
@@ -1266,6 +1278,19 @@
 					e.preventDefault();
 					self.list(self.current_folder, false, {sort: $(this).data('sort'), dir: $(this).data('dir')});
 				});
+				$(frame).on('click', '.cvc-sort-toggle', function(e) {
+					e.preventDefault();
+					let sort = $(this).data('sort');
+					let dir = 'asc';
+
+					if(self.current_list_options.sort === sort) {
+						if(self.current_list_options.dir === 'asc') {
+							dir = 'desc';
+						}
+					}
+
+					self.list(self.current_folder, false, {sort: sort, dir: dir});
+				})
 
 				// keyboard events
 				$(document).on('keydown', function(e) {
