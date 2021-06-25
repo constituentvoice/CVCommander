@@ -384,7 +384,8 @@
 			}
 			else {
 				bytes = Math.round(bytes / 1024);
-				return this.human_size(bytes, iter++);
+				iter ++;
+				return this.human_size(bytes, iter);
 			}
 		},
 		_detect_icons: function(icon_data) {
@@ -649,6 +650,10 @@
 
 			const process_file_list = function(files) {
 				files.sort(function(a, b) {
+					if(typeof a[options.sort] === 'number' && typeof b[options.sort] === 'number') {
+						return options.dir === 'asc' ? a[options.sort] - b[options.sort] : b[options.sort] - a[options.sort];
+					}
+
 					if(a[options.sort] < b[options.sort]) {
 						return options.dir === 'asc' ? -1 : 1;
 					}
