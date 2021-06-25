@@ -20,7 +20,7 @@
 			button_text: '',
 			fa_version: 5,
 			bs_version: 4,
-			fa_variant: 'regular',
+			fa_variant: 'free',
 			fa_icons: {
 				openCommander: 'fa-camera',
 				iconView: 'fa-th-large',
@@ -40,8 +40,10 @@
 				home: 'fa-home',
 				folderBack: 'fa-arrow-left',
 				confirmYes: 'fa-check-circle',
-				confirmNo: 'fa-ban'
-
+				confirmNo: 'fa-ban',
+				folderSort: 'fa-sort',
+				folderSortAsc: 'fa-sort-amount-up',
+				folderSortDesc: 'fa-sort-amount-down'
 			},
 			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
@@ -96,8 +98,8 @@
 			this.$elem.wrap('<div class="cvcinput input-group">');
 			this.$elem.parent().wrap('<div class="cvccontainer">');
 			this.$drop_container = this.$elem.parent().parent();
-			if(this.fa_version > 4) {
-				this._fa_base_class = this._fa_variants[this.fa_variant];
+			if(this.options.fa_version > 4) {
+				this._fa_base_class = this._fa_variants[this.options.fa_variant];
 			}
 
 			// setup some classes depending on BS version
@@ -205,8 +207,40 @@
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.deleteFile)
 						)
 					)
+				),
+				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
+				$('<div>').addClass('btn-group btn-group-sm').append(
+					$('<button>').attr({
+						type: 'button',
+						id: 'cvc-sort',
+						'aria-haspopup': 'dropdown',
+						'data-toggle': 'dropdown'
+					}).addClass('btn btn-sm btn-default dropdown-toggle').append(
+						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSort)
+					),
+					$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-sort').append(
+						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
+							{sort: 'name', dir: 'asc'}).append(
+								$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortAsc),
+								' Name Ascending'
+							),
+						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
+							{sort: 'modified', dir: 'asc'}).append(
+								$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortAsc),
+								' Modified Ascending'
+						),
+						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
+							{sort: 'name', dir: 'desc'}).append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortDesc),
+							' Name Descending'
+						),
+						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
+							{sort: 'modified', dir: 'desc'}).append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortDesc),
+							' Modified Descending'
+						)
+					)
 				)
-
 			);
 			let $preview = $('<div>').addClass('container text-center').attr('id', 'cvc-view-file').css({
 				display: 'none'
@@ -454,11 +488,17 @@
 			let icon_info = self._detect_icons(icon_data);
 			return self._build_icon_html(icon_data, view_type, icon_info.lg, icon_info.sm, options);
 		},
-		list:function(folder, refresh, options) {
+		list: function(folder, refresh, options) {
 			$('#cvclistcontent').show();
 			$('#cvclist-toolbar .cvc-file-opt').addClass('disabled');
 			let self = this;
-			options = options || {};
+
+			let defaults = {
+				sort: 'name',
+				dir: 'asc'
+			};
+
+			options = $.extend(defaults, options || {});
 			let listpane = this.frame.find('#cvclistcontent');
 			let viewtype = options.view || listpane.data('view') || 'icons';
 			listpane.data('view', viewtype);
@@ -483,7 +523,7 @@
 			let build_path = '';
 			let paths = folder.split('/');
 			let prev_path = paths[paths.length - 2];
-			if(typeof prev_path === 'undefined') {
+			if(typeof prev_path === 'undefined' || !prev_path) {
 				listpane.closest('.cvc-modal-body').find('.cvc-back').addClass('disabled')
 			}
 			else {
@@ -530,7 +570,6 @@
 			$(self.frame).find('.cvc-paste').data('folder', folder);
 
 			// if we have a copied file, enable the paste button
-			console.log(self.copied_file);
 			if(self.copied_file) {
 				console.log($(self.frame))
 				$(self.frame).find('.cvc-paste').removeClass('disabled');
@@ -542,33 +581,20 @@
 
 			$('#cvc-view-file').empty().hide();
 
-			if(refresh) {
-				listpane.empty();
-				if(viewtype == 'icons') {
-					listpane.append($('<div>').addClass('row'));
-				}
-				else {
-					listpane.append(
-						$('<table>').addClass('table table-striped').append(
-							$('<tr>').append(
-								$('<th>').text('Name'),
-								$('<th>').text('Modified'),
-								$('<th>').text('Size')
-							)
-						)
-					)
-				}
-			}
-
-			if(viewtype == 'icons') {
-				listpane.data('view-type', 'icons')
-				listpane = listpane.find('.row');
-
+			listpane.empty();
+			if(viewtype === 'icons') {
+				listpane.append($('<div>').addClass('row'));
 			}
 			else {
-				listpane.data('view-type', 'list');
-				listpane.wrap('<div class="table-responsive">');
-				listpane = listpane.find('table');
+				listpane.append(
+					$('<table>').addClass('table table-striped').append(
+						$('<tr>').append(
+							$('<th>').text('Name'),
+							$('<th>').text('Modified'),
+							$('<th>').text('Size')
+						)
+					)
+				)
 			}
 
 			$('.cvview').each(function(idx) {
@@ -580,44 +606,83 @@
 				}
 			});
 
-			if(refresh) {
-				$.getJSON(self.options.list_files_url, {path: folder}, function (resp) {
-					let ico_count = 0;
-					if(resp.files.length < 1) {
-						listpane.append(
-							$('<div>').css({
-								minHeight: '100px',
-								margin: '0 auto'
-							}).addClass('text-center text-muted').text(
-								'This folder is empty'
-							)
-						)
-					}
-					else {
-						$.each(resp.files, function (idx, obj) {
-							listpane.append(self.create_icon(obj, viewtype));
-							ico_count++;
-							if (ico_count === 4 && viewtype === 'icons') {
-								ico_count = 0;
-								let newpane = $('<div class="row"></div>');
-								listpane.parent().append(newpane);
-								listpane = newpane;
-							}
-						});
-					}
-					// here because it needs to be after the icons load
-					listpane.parent().append('<div class="clearfix"></div>');
+			if(viewtype === 'icons') {
+				listpane.data('view-type', 'icons')
+				// listpane = listpane.find('.row');
+				// console.log(listpane)
 
-					// not using event because this is needed internally
-					if(typeof options.refresh_callback === "function") {
-						options.refresh_callback(resp.files)
+			}
+			else {
+				listpane.data('view-type', 'list');
+				listpane.wrap('<div class="table-responsive">');
+				//listpane = listpane.find('table');
+			}
+
+			const process_file_list = function(files) {
+				let attach = listpane;
+				if(viewtype === 'icons') {
+					attach = listpane.find('.row').first();
+				}
+				else if(viewtype === 'list') {
+					attach = listpane.find('table').first();
+				}
+
+				files.sort(function(a, b) {
+					console.log(options.dir)
+					if(a[options.sort] < b[options.sort]) {
+						return options.dir === 'asc' ? -1 : 1;
 					}
-					$('#browsetab').tab('show');
+					else if(a[options.sort] > b[options.sort]) {
+						return options.dir === 'asc' ? 1 : -1;
+					}
+					return 0;
+				});
+
+				if(files.length < 1) {
+					listpane.append(
+						$('<div>').css({
+							minHeight: '100px',
+							margin: '0 auto'
+						}).addClass('text-center text-muted col-md-12').text(
+							'This folder is empty'
+						)
+					)
+				}
+				else {
+
+					$.each(files, function (idx, f) {
+						if(idx > 0 && (idx % 4) === 0 && viewtype === 'icons') {
+							attach = $('<div>').addClass('row');
+							listpane.append(attach);
+						}
+						attach.append(self.create_icon(f, viewtype))
+					})
+				}
+			};
+
+			if(refresh) {
+				$.getJSON(self.options.list_files_url, {path: folder}, function(resp) {
+					if(resp.files.length) {
+						process_file_list(resp.files)
+
+						// not using event because this is needed internally
+						if(typeof options.refresh_callback === "function") {
+							options.refresh_callback(resp.files)
+						}
+					}
+					listpane.append('<div class="clearfix"></div>');
 				});
 			}
 			else {
-				$('#browsetab').tab('show');
+				let file_list = [];
+				listpane.find('.cvc-file').each(function(idx) {
+					file_list.push($(this).data('icon_data'));
+				});
+				process_file_list(file_list)
+				listpane.append('<div class="clearfix"></div>');
 			}
+
+			$('#browsetab').tab('show');
 		},
 		progress:function(percent) {
 			$('.cvcprogress').find('.progress-bar').attr('aria-valuenow', percent);
@@ -958,7 +1023,8 @@
 					self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvc-move', 'Rename', self.options.fa_icons.moveFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvc-delete', 'Delete', self.options.fa_icons.deleteFile, obj, file, 'preview'),
-					self.mk_context_action('#', 'cvview', 'Close Preview', self.options.fa_icons.closeView, obj, file, 'preview')
+					self.mk_context_action('#', 'cvview', 'Close Preview',
+						self.options.fa_icons.closeView, obj, file, 'preview').data('folder', self.current_folder)
 				),
 				$('<div>').addClass('center-block text-center').append(
 					this.create_icon($(obj).data('icon_data'), 'icons', {
@@ -1076,7 +1142,7 @@
 					return;
 				}
 
-				frame = $('<div id="cvcframe" />');
+				frame = $('<div>').attr('id', 'cvcframe');
 				frame.append(this.frame_html);
 				$(document.body).append(frame);
 
@@ -1190,7 +1256,12 @@
 				$(frame).on('click', '.cvc-delete', function(e) {
 					e.preventDefault();
 					self.remove($(this).data('filedom'), $(this).data('filedom').link);
-				})
+				});
+
+				$(frame).on('click', '.cvc-sort', function(e) {
+					e.preventDefault();
+					self.list(self.current_folder, {sort: $(this).data('sort'), dir: $(this).data('dir')});
+				});
 
 				// keyboard events
 				$(document).on('keydown', function(e) {
