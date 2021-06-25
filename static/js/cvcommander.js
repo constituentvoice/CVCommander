@@ -488,6 +488,41 @@
 			let icon_info = self._detect_icons(icon_data);
 			return self._build_icon_html(icon_data, view_type, icon_info.lg, icon_info.sm, options);
 		},
+		_draw_icons_frame: function(files) {
+			// draw the icon view.
+			let self = this;
+			let listpane = this.frame.find('#cvclistcontent');
+			listpane.empty();
+			let	attach = $('<div>').addClass('row');
+			listpane.append(attach);
+			$.each(files, function (idx, f) {
+				if(idx > 0 && (idx % 4) === 0) {
+					attach = $('<div>').addClass('row');
+					listpane.append(attach);
+				}
+				attach.append(self.create_icon(f, 'icons'))
+			})
+		},
+		_draw_table_frame: function(files) {
+			let self = this;
+			let listpane = this.frame.find('#cvclistcontent');
+			listpane.empty();
+			listpane.wrap('<div>').addClass('table-responsive');
+
+			let attach = $('<table>').addClass('table table-striped').append(
+				$('<tr>').append(
+					$('<th>').text('Name'),
+					$('<th>').text('Modified'),
+					$('<th>').text('Size')
+				)
+			);
+
+			$.each(files, function (idx, f) {
+				attach.append(self.create_icon(f, 'list'))
+			});
+
+			listpane.append(attach);
+		},
 		list: function(folder, refresh, options) {
 			$('#cvclistcontent').show();
 			$('#cvclist-toolbar .cvc-file-opt').addClass('disabled');
@@ -581,22 +616,6 @@
 
 			$('#cvc-view-file').empty().hide();
 
-			listpane.empty();
-			if(viewtype === 'icons') {
-				listpane.append($('<div>').addClass('row'));
-			}
-			else {
-				listpane.append(
-					$('<table>').addClass('table table-striped').append(
-						$('<tr>').append(
-							$('<th>').text('Name'),
-							$('<th>').text('Modified'),
-							$('<th>').text('Size')
-						)
-					)
-				)
-			}
-
 			$('.cvview').each(function(idx) {
 				if($(this).data('view-type') === viewtype) {
 					$(this).addClass('active');
@@ -605,18 +624,6 @@
 					$(this).removeClass('active');
 				}
 			});
-
-			if(viewtype === 'icons') {
-				listpane.data('view-type', 'icons')
-				// listpane = listpane.find('.row');
-				// console.log(listpane)
-
-			}
-			else {
-				listpane.data('view-type', 'list');
-				listpane.wrap('<div class="table-responsive">');
-				//listpane = listpane.find('table');
-			}
 
 			const process_file_list = function(files) {
 				let attach = listpane;
@@ -628,7 +635,6 @@
 				}
 
 				files.sort(function(a, b) {
-					console.log(options.dir)
 					if(a[options.sort] < b[options.sort]) {
 						return options.dir === 'asc' ? -1 : 1;
 					}
@@ -648,15 +654,11 @@
 						)
 					)
 				}
-				else {
-
-					$.each(files, function (idx, f) {
-						if(idx > 0 && (idx % 4) === 0 && viewtype === 'icons') {
-							attach = $('<div>').addClass('row');
-							listpane.append(attach);
-						}
-						attach.append(self.create_icon(f, viewtype))
-					})
+				else if(viewtype === 'icons') {
+					self._draw_icons_frame(files);
+				}
+				else if(viewtype === 'list') {
+					self._draw_table_frame(files);
 				}
 			};
 
@@ -670,16 +672,17 @@
 							options.refresh_callback(resp.files)
 						}
 					}
-					listpane.append('<div class="clearfix"></div>');
+					listpane.append($('<div>').addClass('clearfix'));
 				});
 			}
 			else {
 				let file_list = [];
 				listpane.find('.cvc-file').each(function(idx) {
+					console.log(this);
 					file_list.push($(this).data('icon_data'));
 				});
 				process_file_list(file_list)
-				listpane.append('<div class="clearfix"></div>');
+				listpane.append($('<div>').addClass('clearfix'));
 			}
 
 			$('#browsetab').tab('show');
@@ -1260,7 +1263,7 @@
 
 				$(frame).on('click', '.cvc-sort', function(e) {
 					e.preventDefault();
-					self.list(self.current_folder, {sort: $(this).data('sort'), dir: $(this).data('dir')});
+					self.list(self.current_folder, false, {sort: $(this).data('sort'), dir: $(this).data('dir')});
 				});
 
 				// keyboard events
