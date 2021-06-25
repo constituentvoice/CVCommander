@@ -533,7 +533,9 @@
 				dir: 'asc'
 			};
 
-			options = $.extend(defaults, options || {});
+			options = $.extend(defaults, self.current_list_options || {}, options || {});
+			self.current_list_options = options;
+
 			let listpane = this.frame.find('#cvclistcontent');
 			let viewtype = options.view || listpane.data('view') || 'icons';
 			listpane.data('view', viewtype);
@@ -606,7 +608,6 @@
 
 			// if we have a copied file, enable the paste button
 			if(self.copied_file) {
-				console.log($(self.frame))
 				$(self.frame).find('.cvc-paste').removeClass('disabled');
 			}
 
