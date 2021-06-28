@@ -80,6 +80,14 @@
 		e.preventDefault();
 	};
 
+	const cvcID = function() {
+		// taken from https://gist.github.com/gordonbrander/2230317
+		// Math.random should be unique because of its seeding algorithm.
+		// Convert it to base 36 (numbers + letters), and grab the first 9 characters
+		// after the decimal.
+		return '_' + Math.random().toString(36).substr(2, 9);
+	};
+
 	const cvCommander = function ( element, config ) {
 		this.element = element;
 		this._defaults = defaults;
@@ -119,14 +127,16 @@
 
 			/* create modal */
 			let $frame, $modal, $header, $body;
+			this.ident = this.options.id || cvcID();
+
 			if(this.options.modal) {
-				$frame = $('<div>').addClass('cvc-main-frame modal fade');
+				$frame = $('<div>').addClass('cvc-main-frame modal fade').attr('id', this.ident);
 				$modal = $('<div>').addClass('modal-content');
 				$header = $('<div>').addClass('modal-header')
 				$body = $('<div>').addClass('cvc-modal-body modal-body')
 			}
 			else {
-				$frame = $('<div>').addClass('cvc-main-frame'); //.attr('id', 'cvc-container');
+				$frame = $('<div>').addClass('cvc-main-frame').attr('id', this.ident);
 				$modal = $('<div>').addClass(this.bs_frame_class);
 				$header = $('<div>').addClass(this.bs_header_class);
 				$body = $('<div>').addClass('cvc-modal-body ' + this.bs_body_class)
@@ -144,17 +154,24 @@
 				$header.append($close_btn);
 			}
 
+			this.$browse_tab = $('<a>').attr({
+				href: '#cvclistview', role: 'tab', 'data-toggle': 'tab', 'data-target': '#' + this.ident + ' .cvc-list-tab'
+			}).addClass('nav-link active').append(
+				$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.browse), ' Browse');
+
+			this.$upload_tab = $('<a>').addClass('nav-link').attr({
+				href: '#cvcupload', role: 'tab', 'data-toggle': 'tab', 'data-target': '#' + this.ident + ' .cvc-upload-tab'
+			}).append(
+				$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.upload), ' Upload'
+			)
+
 			$header.append(
-				$('<ul>').addClass('nav nav-tabs').attr('role', 'tablist').prop(
-					'id', 'cvcmaintabs').append(
+				$('<ul>').addClass('nav nav-tabs').attr('role', 'tablist').append(
 					$('<li>').addClass('nav-item').append(
-						$('<a>').attr({id: 'browsetab', href: '#cvclistview', role: 'tab', 'data-toggle': 'tab'})
-							.addClass('nav-link active')
-							.append($('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.browse), ' Browse')
+						this.$browse_tab,
 					),
 					$('<li>').attr('role', 'presentation').append(
-						$('<a>').addClass('nav-link').attr({href: '#cvcupload', role: 'tab', 'data-toggle': 'tab'})
-							.append($('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.upload), ' Upload')
+						this.$upload_tab
 					)
 				)
 			);
@@ -295,21 +312,21 @@
 
 			this.toolbar = $toolbar;
 
-			let $preview = $('<div>').addClass('container-fluid text-center').attr('id', 'cvc-view-file').css({
+			let $preview = $('<div>').addClass('container-fluid text-center cvc-view-file').css({
 				display: 'none'
 			});
 
 			$body.append(
 				$('<div>').addClass('cvc-modal-modal'),
 				$('<div>').addClass('tab-content').append(
-					$('<div>').addClass('tab-pane active').attr('id', 'cvclistview').append(
+					$('<div>').addClass('tab-pane active cvc-list-tab').append(
 						$toolbar,
 						$('<div>').addClass('cvc-list-content container-fluid'),
 						$preview
 					),
-					$('<label>').addClass('tab-pane text-muted center').prop('id', 'cvcupload').append(
+					$('<label>').addClass('tab-pane text-muted center cvc-upload-tab').append(
 						$('<span>').addClass('cvcdropmessage').append('Drop files to upload'),
-						$('<input>').attr({id: 'cvcuploadinput', type: 'file'}).css('display', 'none'),
+						$('<input>').attr({type: 'file'}).addClass('cvc-fallback-input').css('display', 'none'),
 						$('<div>').addClass('progress cvcprogress').css('display', 'none').append(
 							$('<div>').addClass('progress-bar progress-bar-success').attr(
 								{role:'progressbar', 'aria-valuenow': 60, 'aria-valuemin': 0, 'aria-valuemax': 100}
@@ -693,9 +710,9 @@
 				refresh = true;
 			}
 
-			$('#cvc-view-file').empty().hide();
+			self.frame.find('.cvc-view-file').empty().hide();
 
-			$('.cvview').each(function(idx) {
+			self.frame.find('.cvview').each(function(idx) {
 				if($(this).data('view-type') === viewtype) {
 					$(this).addClass('active');
 				}
@@ -777,7 +794,7 @@
 				listpane.append($('<div>').addClass('clearfix'));
 			}
 
-			$('#browsetab').tab('show');
+			this.$browse_tab.tab('show');
 		},
 		progress:function(percent) {
 			$('.cvcprogress').find('.progress-bar').attr('aria-valuenow', percent);
@@ -1108,7 +1125,7 @@
 				obj = $(obj).data('filedom');
 			}
 
-			$('#cvc-view-file').append(
+			self.frame.find('.cvc-view-file').append(
 				$('<div>').append(
 					self.mk_context_action('#', 'cvc-use', 'Use', self.options.fa_icons.useFile, obj, file, 'preview'),
 					self.mk_context_action('#', 'cvc-copy', 'Copy', self.options.fa_icons.copyFile, obj, file, 'preview'),
@@ -1131,7 +1148,7 @@
 		},
 		usefile: function(obj, file) {
 			$('.cvc-selected').removeClass('cvc-selected');  // deslect the file
-			$('#cvc-view-file').empty().hide();
+			this.frame.find('.cvc-view-file').empty().hide();
 			this.list(this.current_folder || '/')
 			this.$elem.val(file);
 			this.close_browser();
@@ -1210,8 +1227,6 @@
 			return sel;
 		},
 		close_browser: function(obj) {
-			// this.list('/');
-			//$('#cvc-container').modal('hide');
 			this.main_wrapper.modal('hide');
 		},
 		open_browser: function(obj) {
@@ -1231,7 +1246,6 @@
 			}
 			else {
 				if(self.frame) {
-					//$('#cvc-container').modal('show');
 					this.main_wrapper.modal('show');
 					return;
 				}
@@ -1264,33 +1278,33 @@
 					self.copy($(this).data('filedom'));
 				})
 
-				$(frame).on('dragenter','.cvc-list-view', function(e) {
+				$(frame).on('dragenter','.cvc-list-tab', function(e) {
 					_clean_event(e);
 					$('a[href="#cvcupload"]').trigger('click'); // ugly hack
 					self.back_to_list = true;
 				});
 
-				$(frame).on('dragenter, dragover','#cvcupload',function(e) {
-					$('#cvcupload').removeClass('text-muted');
+				$(frame).on('dragenter, dragover','.cvc-upload-tab',function(e) {
+					$(this).removeClass('text-muted');
 					_clean_event(e);
 				});
 
-				$(frame).on('dragleave','#cvcupload',function(e) {
-					$('#cvcupload').addClass('text-muted');
+				$(frame).on('dragleave','.cvc-upload-tab',function(e) {
+					$(this).addClass('text-muted');
 					if( self.back_to_list ) {
 						self.frame.find('a[href="#cvclistview"]').trigger('click');
 					}
 				});
 
-				$(frame).on('drop','#cvcupload',function(e) {
+				$(frame).on('drop','.cvc-upload-tab',function(e) {
 					e.preventDefault();
-					$('#cvcupload').addClass('text-muted');
+					$(this).addClass('text-muted');
 					let files = e.originalEvent.dataTransfer.files;
 					self.upload( files );
 				});
 
 				// for fallback reasons
-				$(document).on('change', '#cvcuploadinput', function(e) {
+				$(frame).on('change', '.cvc-fallback-input', function(e) {
 					_clean_event(e);
 					self.upload(this.files);
 				});
@@ -1410,7 +1424,6 @@
 					$('.cvccontext').remove();
 				});
 
-				//$('#cvc-container').modal('show');
 				this.main_wrapper.modal('show');
 				self.frame = frame;
 				self.list('/', true)

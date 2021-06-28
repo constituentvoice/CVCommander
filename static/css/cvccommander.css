@@ -1,7 +1,3 @@
-#cvcupload {
-	position: relative;
-}
-
 .tab-content {
 	height: 80%;
 }
@@ -12,7 +8,8 @@
 	margin-top: .5em;
 }
 
-#cvcupload {
+.cvc-upload-tab {
+	position: relative;
 	text-align:center;
 	font-size: 200%;
 	border: 2px dashed #aaa;
