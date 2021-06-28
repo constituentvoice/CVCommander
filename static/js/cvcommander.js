@@ -36,7 +36,7 @@
 				folder: 'fa-folder',
 				createFolder: 'fa-folder-plus',
 				browse: 'fa-folder-open',
-				upload: 'fa-cloud-upload',
+				upload: 'fa-upload',
 				home: 'fa-home',
 				folderBack: 'fa-arrow-left',
 				confirmYes: 'fa-check-circle',
@@ -284,7 +284,7 @@
 					)
 				)
 			);
-			let $preview = $('<div>').addClass('container text-center').attr('id', 'cvc-view-file').css({
+			let $preview = $('<div>').addClass('container-fluid text-center').attr('id', 'cvc-view-file').css({
 				display: 'none'
 			});
 
@@ -293,7 +293,7 @@
 				$('<div>').addClass('tab-content').append(
 					$('<div>').addClass('tab-pane active').attr('id', 'cvclistview').append(
 						$toolbar,
-						$('<div>').attr('id', 'cvclistcontent').addClass('container'),
+						$('<div>').attr('id', 'cvclistcontent').addClass('container-fluid'),
 						$preview
 					),
 					$('<label>').addClass('tab-pane text-muted center').prop('id', 'cvcupload').append(
