@@ -37,46 +37,53 @@ a.btn {
 	color: gray;
 }
 
-#cvc-container .modal-header {
+.cvc-main-frame .modal-header {
 	color: white;
 	padding-bottom: 0;
-	border-bottom: 1px solid #ccc;
 }
 
-#cvc-container .modal-header>.nav-tabs {
-	border-bottom: 0px;
+.cvc-main-frame .modal-header>.nav-tabs {
+	border-bottom: 0;
 }
 
-#cvc-container .nav-tabs li a:not(.active) {
-	background-color: #aaaaaa;
+.cvc-main-frame .nav-tabs li a:not(.active) {
+	background-color: #eee;
 	color: black;
 }
+.cvc-modal-body {
+	padding-top: 0;
+}
+.cvc-modal-body .tab-pane {
+	margin-top: 0;
+}
 
+/*
 #cvc-container {
 	min-height: 50%;
 	max-height: 50%;
 	height: 50%;
 }
 
-#cvc-container .modal-content {
+.cvc-main-frame .modal-content {
 	height: 100%;
 }
+ */
 
 #cvclist-toolbar {
 	padding-bottom: 1px;
 }
 
-#cvclistcontent {
+.cvc-list-content {
 	padding: 2px;
 	border: 1px solid #aaaaaa;
+	height: 100%;
+	max-height: 100%;
+	overflow-y: auto;
+
 }
 
-#cvclistcontent .row {
+.cvc-list-content .row {
 	padding: .5rem;
-}
-
-#cvc-container .modal-dialog .modal-body {
-	padding-top: 0px;
 }
 
 .cvc-f-name {
@@ -193,4 +200,9 @@ a.btn {
 
 .cvc-path-btns {
 	display: inline-block;
+}
+
+.cvc-list-content {
+	max-height: 50rem;
+	overflow-y: auto;
 }
