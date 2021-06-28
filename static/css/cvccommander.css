@@ -1,7 +1,3 @@
-#cvcupload {
-	position: relative;
-}
-
 .tab-content {
 	height: 80%;
 }
@@ -12,7 +8,8 @@
 	margin-top: .5em;
 }
 
-#cvcupload {
+.cvc-upload-tab {
+	position: relative;
 	text-align:center;
 	font-size: 200%;
 	border: 2px dashed #aaa;
@@ -37,47 +34,53 @@ a.btn {
 	color: gray;
 }
 
-#cvc-container .modal-header {
-	background-color: #666666;
+.cvc-main-frame .modal-header {
 	color: white;
-	padding-bottom: 0px;
-	border-bottom: 0px;
+	padding-bottom: 0;
 }
 
-#cvc-container .modal-header>.nav-tabs {
-	border-bottom: 0px;
+.cvc-main-frame .modal-header>.nav-tabs {
+	border-bottom: 0;
 }
 
-#cvc-container .nav-tabs li a:not(.active) {
-	background-color: #aaaaaa;
+.cvc-main-frame .nav-tabs li a:not(.active) {
+	background-color: #eee;
 	color: black;
 }
+.cvc-modal-body {
+	padding-top: 0;
+}
+.cvc-modal-body .tab-pane {
+	margin-top: 0;
+}
 
+/*
 #cvc-container {
 	min-height: 50%;
 	max-height: 50%;
 	height: 50%;
 }
 
-#cvc-container .modal-content {
+.cvc-main-frame .modal-content {
 	height: 100%;
 }
+ */
 
-#cvclist-toolbar {
+.cvclist-toolbar {
 	padding-bottom: 1px;
 }
 
-#cvclistcontent {
+.cvc-list-content {
 	padding: 2px;
 	border: 1px solid #aaaaaa;
+	height: 100%;
+	max-height: 100%;
+	overflow-y: auto;
+
 }
 
-#cvclistcontent .row {
+.cvc-list-content .row {
 	padding: .5rem;
-}
-
-#cvc-container .modal-dialog .modal-body {
-	padding-top: 0px;
 }
 
 .cvc-f-name {
@@ -86,4 +89,119 @@ a.btn {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	font-size: 14px;
+}
+
+.cvc-f-name-font {
+	color: black;
+}
+
+.cvccontext {
+	box-shadow: 5px 5px 10px #333;
+	min-width: 15rem;
+}
+
+.cvc-modal-body {
+	overflow-y: auto;
+}
+
+.cvc-vertical-sep {
+	font-size: large;
+	color: black;
+}
+
+.cvc-file {
+	cursor: pointer;
+	color: #666666;
+}
+
+/* icon colors */
+.cvc-file-pdf {
+	color: darkred;
+}
+
+.cvc-file-word {
+	color: darkblue;
+}
+
+.cvc-file-excel {
+	color: darkgreen;
+}
+
+.cvc-file-powerpoint {
+	color: orangered;
+}
+
+.cvc-file-code {
+	color: darkorange;
+}
+
+.cvc-file-archive {
+	color: gold;
+}
+
+.cvc-file-image {
+	color: green;
+}
+
+.cvc-file-video {
+	color: purple;
+}
+
+.cvc-file-audio {
+	color: blueviolet;
+}
+
+.cvc-folder {
+	color: deepskyblue;
+}
+
+.cvc-select-color {
+	color: green;
+}
+
+.cvc-view-color {
+	color: darkblue;
+}
+
+.cvc-copy-color {
+	color: black;
+}
+
+.cvc-move-color {
+	color: black;
+}
+
+.cvc-trash-color {
+	color: darkred;
+}
+
+.cvc-selected {
+	background-color: #ddd !important;
+}
+
+.cvc-file-csv {
+	color: darkgreen;
+}
+
+.cvc-modal-modal {
+	width: 100%;
+	display: none;
+	position: absolute;
+	top: 30px;
+	z-index: 9999;
+}
+
+.cvc-modal-modal-content {
+	box-shadow: 5px 5px 10px #333;
+	background-color: white;
+}
+
+.cvc-path-btns {
+	display: inline-block;
+}
+
+.cvc-list-content {
+	max-height: 50rem;
+	overflow-y: auto;
 }
