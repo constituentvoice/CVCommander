@@ -189,10 +189,12 @@ a.btn {
 	display: none;
 	position: absolute;
 	top: 30px;
+	z-index: 9999;
 }
 
 .cvc-modal-modal-content {
 	box-shadow: 5px 5px 10px #333;
+	background-color: white;
 }
 
 .cvc-path-btns {

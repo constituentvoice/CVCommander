@@ -121,7 +121,7 @@
 			this.bs_body_class = 'card-body';
 			if(this.options.bs_version === 3) {
 				this.bs_frame_class = 'panel panel-default';
-				this.bs_header_class = 'panel-header';
+				this.bs_header_class = 'panel-heading';
 				this.bs_body_class = 'panel-body';
 			}
 
@@ -873,7 +873,9 @@
 					{
 						width: '650px', 'background-color': 'white', 'z-index': 9999, margin: '0 auto'
 					}).append(
-					$('<div>').addClass(this.bs_header_class).append(title),
+					$('<div>').addClass(this.bs_header_class).append(
+						$('<h4>').text(title)
+					),
 					$('<div>').addClass(this.bs_body_class).append(content)
 				)
 			).show();
@@ -1052,6 +1054,7 @@
 						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.confirmYes),
 						' Yes'
 					),
+					'&nbsp;',
 					$('<button>').attr('type', 'button').addClass('cvc-confirm-no-btn btn btn-default').append(
 						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.confirmNo),
 						' No'
