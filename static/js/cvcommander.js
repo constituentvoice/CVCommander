@@ -184,7 +184,7 @@
 				),
 			);
 
-			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
+			let $toolbar = $('<div>').addClass('cvclist-toolbar').append(
 				$('<div>').addClass('btn-group').append(
 					$('<a>').attr({href: '#', title: 'Icon View'}).data('view-type', 'icons').addClass(
 						'cvview btn btn-sm btn-light disabled'
@@ -292,6 +292,9 @@
 					)
 				)
 			);
+
+			this.toolbar = $toolbar;
+
 			let $preview = $('<div>').addClass('container-fluid text-center').attr('id', 'cvc-view-file').css({
 				display: 'none'
 			});
@@ -598,10 +601,10 @@
 			listpane.append(attach);
 		},
 		list: function(folder, refresh, options) {
+			let self = this;
 			let listpane = this.frame.find('.cvc-list-content').first();
 			listpane.show();
-			$('#cvclist-toolbar .cvc-file-opt').addClass('disabled');
-			let self = this;
+			self.toolbar.find('.cvc-file-opt').addClass('disabled');
 
 			let defaults = {
 				sort: 'name',
@@ -1138,7 +1141,7 @@
 			$('.cvc-selected').removeClass('cvc-selected');
 
 			$(obj).addClass('cvc-selected');
-			$('#cvclist-toolbar').find('.cvc-file-opt').each(function(idx) {
+			self.toolbar.find('.cvc-file-opt').each(function(idx) {
 				if(($(this).hasClass('cvc-paste') && self.copied_file) || !$(this).hasClass('cvc-paste')) {
 					$(this).data({filedom: obj, link: file, icon_data: $(obj).data('icon_data')}).removeClass('disabled')
 				}
