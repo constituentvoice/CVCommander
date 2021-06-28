@@ -94,6 +94,7 @@ a.btn {
 
 .cvccontext {
 	box-shadow: 5px 5px 10px #333;
+	min-width: 15rem;
 }
 
 .cvc-modal-body {
