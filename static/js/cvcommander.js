@@ -163,10 +163,10 @@
 			}
 
 			let $path_btns = $('<div>').addClass('btn-group btn-group-sm').append(
-				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvview').data('folder', '/').append(
+				$('<button>').attr({type: 'button', title: 'Home'}).addClass('btn btn-sm btn-default cvview').data('folder', '/').append(
 					$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.home)
 				),
-				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvc-back cvview disabled').append(
+				$('<button>').attr({type: 'button', title: 'Back'}).addClass('btn btn-sm btn-default cvc-back cvview disabled').append(
 					$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderBack)
 				),
 				$('<div>').addClass('cvc-path-btns btn-group').append(
@@ -175,7 +175,7 @@
 					}).text('[root]/'),
 					$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-pathtree')
 				),
-				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvc-create-folder').append(
+				$('<button>').attr({type: 'button', title: 'Create Folder'}).addClass('btn btn-sm btn-default cvc-create-folder').append(
 					$('<span>').addClass('cvc-folder').append(
 						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.createFolder)
 					),
@@ -184,10 +184,10 @@
 
 			let $toolbar = $('<div>').attr('id', 'cvclist-toolbar').append(
 				$('<div>').addClass('btn-group').append(
-					$('<a>').attr({href: '#', name: 'Icon View'}).data('view-type', 'icons').addClass(
+					$('<a>').attr({href: '#', title: 'Icon View'}).data('view-type', 'icons').addClass(
 						'cvview btn btn-sm btn-light disabled'
 					).append($('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.iconView)),
-					$('<a>').attr({href: '#', name: 'List View'}).data('view-type', 'list').addClass(
+					$('<a>').attr({href: '#', title: 'List View'}).data('view-type', 'list').addClass(
 						'cvview btn btn-sm btn-light disabled'
 					).append($('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.listView))
 				),
@@ -195,32 +195,32 @@
 				$path_btns,
 				$('<span>').addClass('cvc-vertical-sep').html('&nbsp;|&nbsp;'),
 				$('<div>').addClass('btn-group').append(
-					$('<a>').attr({href: '#', name: 'Use'}).addClass('btn btn-sm btn-light cvc-use disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Use / Select'}).addClass('btn btn-sm btn-light cvc-use disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-select-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.useFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Preview'}).addClass('btn btn-sm btn-light cvc-view disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Preview'}).addClass('btn btn-sm btn-light cvc-view disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-view-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.viewFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Copy'}).addClass('btn btn-sm btn-light cvc-copy disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Copy'}).addClass('btn btn-sm btn-light cvc-copy disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-copy-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.copyFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Paste'}).addClass('btn btn-sm btn-light cvc-paste disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Paste'}).addClass('btn btn-sm btn-light cvc-paste disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-paste-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.pasteFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Rename'}).addClass( 'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Rename'}).addClass( 'btn btn-sm btn-light cvc-move disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-move-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.moveFile)
 						)
 					),
-					$('<a>').attr({href: '#', name: 'Delete'}).addClass( 'btn btn-sm btn-light cvc-delete disabled cvc-file-opt').append(
+					$('<a>').attr({href: '#', title: 'Delete'}).addClass( 'btn btn-sm btn-light cvc-delete disabled cvc-file-opt').append(
 						$('<span>').addClass('cvc-trash-color').append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.deleteFile)
 						)
@@ -232,7 +232,8 @@
 						type: 'button',
 						id: 'cvc-sort',
 						'aria-haspopup': 'dropdown',
-						'data-toggle': 'dropdown'
+						'data-toggle': 'dropdown',
+						title: 'Sort'
 					}).addClass('btn btn-sm btn-default dropdown-toggle').append(
 						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSort)
 					),
