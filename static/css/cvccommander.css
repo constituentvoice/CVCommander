@@ -172,7 +172,7 @@ a.btn {
 }
 
 .cvc-selected {
-	background-color: #ddd;
+	background-color: #ddd !important;
 }
 
 .cvc-file-csv {

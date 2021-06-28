@@ -577,12 +577,16 @@
 					),
 				)
 			});
-			attach.append(header);
+			attach.append(
+				$('<thead>').append(header)
+			);
+
+			let $tbody = $('<tbody>');
 
 			$.each(files, function (idx, f) {
-				attach.append(self.create_icon(f, 'list'))
+				$tbody.append(self.create_icon(f, 'list'))
 			});
-
+			attach.append($tbody);
 			listpane.append(attach);
 		},
 		list: function(folder, refresh, options) {
