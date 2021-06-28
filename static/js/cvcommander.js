@@ -1389,7 +1389,12 @@
 					else if(self.copied_file && e.which === 86 && (e.metaKey || e.ctrlKey)) {
 						self.paste(self.current_folder);
 					}
-				})
+				});
+
+				$(window).on('resize', function(e) {
+					// clear the context menu if it is visible
+					$('.cvccontext').remove();
+				});
 
 				$('#cvc-container').modal('show');
 				self.frame = frame;
