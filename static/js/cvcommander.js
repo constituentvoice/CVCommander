@@ -85,6 +85,7 @@
 		this.config = config;
 		this._fa_base_class = "fa";
 		this._fa_variants = {free: 'fas', regular: 'far', light: 'fal', duotone: 'fad'};
+		this.cached_files = [];
 
 	};
 
@@ -242,7 +243,14 @@
 							' Modified Descending'
 						)
 					)
+				),
+				$('<input>').addClass('cvc-search-input form-control form-control-sm').attr(
+					{type: 'text', placeholder: 'Search'}).on('keydown',
+					function(e) {
+						self.list(self.current_folder, false, {search: $(this).val()})
+					}
 				)
+
 			);
 			let $preview = $('<div>').addClass('container text-center').attr('id', 'cvc-view-file').css({
 				display: 'none'
@@ -552,7 +560,8 @@
 
 			let defaults = {
 				sort: 'name',
-				dir: 'asc'
+				dir: 'asc',
+				search: ''
 			};
 
 			options = $.extend(defaults, self.current_list_options || {}, options || {});
@@ -663,7 +672,21 @@
 					return 0;
 				});
 
+				if(options.search.length > 0) {
+					let files_out = [];
+					$.each(files, function(idx, f) {
+						if(f.name.indexOf(options.search) > -1) {
+							files_out.push(f)
+						}
+					});
+					files = files_out;
+				}
+
 				if(files.length < 1) {
+					let empty_text = 'This folder is empty';
+					if(options.search) {
+						empty_text = 'No files match "' + options.search + '"'
+					}
 					listpane.append(
 						$('<div>').css({
 							minHeight: '100px',
@@ -684,6 +707,7 @@
 			if(refresh) {
 				$.getJSON(self.options.list_files_url, {path: folder}, function(resp) {
 					if(resp.files.length) {
+						self.cached_files = resp.files;
 						process_file_list(resp.files)
 
 						// not using event because this is needed internally
@@ -695,10 +719,13 @@
 				});
 			}
 			else {
-				let file_list = [];
-				listpane.find('.cvc-file').each(function(idx) {
-					file_list.push($(this).data('icon_data'));
-				});
+				let file_list = self.cached_files;
+				if(file_list.length < 1) {
+					// backup but i'm not sure it's necessary
+					listpane.find('.cvc-file').each(function(idx) {
+						file_list.push($(this).data('icon_data'));
+					});
+				}
 				process_file_list(file_list)
 				listpane.append($('<div>').addClass('clearfix'));
 			}
