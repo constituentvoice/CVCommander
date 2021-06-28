@@ -237,26 +237,31 @@
 						$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSort)
 					),
 					$('<div>').addClass('dropdown-menu').attr('aria-labelledby', 'cvc-sort').append(
+						$('<li>').append(
 						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
 							{sort: 'name', dir: 'asc'}).append(
 								$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortAsc),
 								' Name Ascending'
-							),
+							)
+						),
+						$('<li>').append(
 						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
 							{sort: 'modified', dir: 'asc'}).append(
 								$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortAsc),
 								' Modified Ascending'
-						),
+						)),
+						$('<li>').append(
 						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
 							{sort: 'name', dir: 'desc'}).append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortDesc),
 							' Name Descending'
-						),
+						)),
+						$('<li>').append(
 						$('<a>').attr('href', '#').addClass('dropdown-item cvc-sort').data(
 							{sort: 'modified', dir: 'desc'}).append(
 							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.folderSortDesc),
 							' Modified Descending'
-						)
+						))
 					)
 				),
 				$('<div>').addClass('input-group input-group-sm').append(
@@ -636,12 +641,12 @@
 
 			// make sure the tree is empty and starts with root
 			$path_btns.find('.dropdown-menu').empty().append(
-				$('<a>').attr('href', '#').addClass('dropdown-item cvview').append(
+				$('<li>').append($('<a>').attr('href', '#').addClass('dropdown-item cvview').append(
 					$('<span>').addClass('cvc-folder').append(
 						$('<i>').addClass(self._fa_base_class + ' ' + self.options.fa_icons.folder)
 					),
 					' [root]/'
-				)
+				))
 			)
 
 			// set tree paths
