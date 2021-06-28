@@ -45,7 +45,9 @@
 				folderSortAsc: 'fa-sort-amount-up',
 				folderSortDesc: 'fa-sort-amount-down',
 				folderHeaderSortAsc: 'fa-sort-up',
-				folderHeaderSortDesc: 'fa-sort-down'
+				folderHeaderSortDesc: 'fa-sort-down',
+				search: 'fa-search',
+				clearSearch: 'fa-times'
 			},
 			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
@@ -244,13 +246,30 @@
 						)
 					)
 				),
-				$('<input>').addClass('cvc-search-input form-control form-control-sm').attr(
-					{type: 'text', placeholder: 'Search'}).on('keydown',
-					function(e) {
-						self.list(self.current_folder, false, {search: $(this).val()})
-					}
+				$('<div>').addClass('input-group input-group-sm').append(
+					$('<div>').addClass('input-group-addon input-group-prepend').append(
+						$('<span>').addClass('input-group-text').append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.search)
+						)
+					),
+					$('<input>').addClass('cvc-search-input form-control form-control-sm').attr(
+						{type: 'text', placeholder: 'Search'}).on('keydown',
+						function(e) {
+							self.list(self.current_folder, false, {search: $(this).val()})
+						}
+					),
+					$('<span>').addClass('input-group-append input-group-btn').append(
+						$('<button>').addClass('btn btn-default').attr('type', 'button').on( 'click',
+							function(e) {
+								e.preventDefault();
+								$(this).closest('.input-group').find('input').val('');
+								self.list(self.current_folder, false, {search: ''});
+							}
+						).append(
+							$('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.clearSearch)
+						)
+					)
 				)
-
 			);
 			let $preview = $('<div>').addClass('container text-center').attr('id', 'cvc-view-file').css({
 				display: 'none'
@@ -766,7 +785,6 @@
 
 			let fd = new FormData();
 			let total_size = 0;
-			console.log(files);
 			$.each(files, function(idx, f) {
 				fd.append( self.upload_field, f )
 				total_size += f.size;
@@ -839,7 +857,6 @@
 			)
 		},
 		cvc_alert: function(sel, msg, options) {
-			console.log(sel);
 
 			let defaults = {
 				timeout: 0,
@@ -894,7 +911,6 @@
 		},
 		paste: function(path) {
 			let self = this;
-			console.log(self.copied_file);
 			if(self.copied_file) {
 				let $sel = $(self.frame).find('.cvc-modal-body');
 				$.ajax(self.options.copy_file_url, {
@@ -906,7 +922,6 @@
 					},
 					method: 'POST',
 					success: function(output) {
-						console.log(output);
 						if(output.status === 'OK') {
 							self.copied_file = null;
 							self.list(path, true, {
