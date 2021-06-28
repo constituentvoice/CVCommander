@@ -132,6 +132,16 @@
 				$body = $('<div>').addClass('cvc-modal-body ' + this.bs_body_class)
 			}
 
+			let $close_btn = $('<button>').addClass('close').attr(
+				{type:'button', 'aria-label': 'Close', 'data-dismiss': 'modal'}).append(
+					$('<i>').addClass(
+						this._fa_base_class + ' fa-sm ' + this.options.fa_icons.closeCommander));
+
+			if(this.options.bs_version === 3) {
+				// bs 3 needs the close button before the tabs :-/
+				$header.append($close_btn);
+			}
+
 			$header.append(
 				$('<ul>').addClass('nav nav-tabs').attr('role', 'tablist').prop(
 					'id', 'cvcmaintabs').append(
@@ -144,10 +154,13 @@
 						$('<a>').addClass('nav-link').attr({href: '#cvcupload', role: 'tab', 'data-toggle': 'tab'})
 							.append($('<i>').addClass(this._fa_base_class + ' ' + this.options.fa_icons.upload), ' Upload')
 					)
-				),
-				$('<button>').addClass('close').attr({type:'button', 'aria-label': 'Close', 'data-dismiss': 'modal'})
-					.append($('<i>').addClass(this._fa_base_class + ' fa-sm ' + this.options.fa_icons.closeCommander))
+				)
 			);
+
+			if(this.options.bs_version !== 3) {
+				// bs 4+ needs the close button after the tabs
+				$header.append($close_btn);
+			}
 
 			let $path_btns = $('<div>').addClass('btn-group btn-group-sm').append(
 				$('<button>').attr('type', 'button').addClass('btn btn-sm btn-default cvview').data('folder', '/').append(
