@@ -47,7 +47,8 @@
 				folderHeaderSortAsc: 'fa-sort-up',
 				folderHeaderSortDesc: 'fa-sort-down',
 				search: 'fa-search',
-				clearSearch: 'fa-times'
+				clearSearch: 'fa-times',
+				loading: 'fa-spinner'
 			},
 			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
@@ -769,17 +770,26 @@
 			};
 
 			if(refresh) {
+				listpane.empty();
+				let fa_classes = [self._fa_base_class, 'fa-3x', 'fa-spin', self.options.fa_icons.loading]
+				listpane.append(
+					$('<div>').addClass('cvc-refresh-ind text-center text-muted').append(
+						$('<i>').addClass(fa_classes.join(' ')),
+						$('<br>'),
+						'Loading icons, please wait ...'
+					)
+				);
 				$.getJSON(self.options.list_files_url, {path: folder}, function(resp) {
-					if(resp.files.length) {
-						self.cached_files = resp.files;
-						process_file_list(resp.files)
+					self.cached_files = resp.files;
+					process_file_list(resp.files)
 
-						// not using event because this is needed internally
-						if(typeof options.refresh_callback === "function") {
-							options.refresh_callback(resp.files)
-						}
+					// not using event because this is needed internally
+					if(typeof options.refresh_callback === "function") {
+						options.refresh_callback(resp.files)
 					}
 					listpane.append($('<div>').addClass('clearfix'));
+				}).always(function() {
+					listpane.find('.cvc-refresh-ind').remove();
 				});
 			}
 			else {

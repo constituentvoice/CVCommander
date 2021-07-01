@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
 from flask import Flask, request, g, redirect,render_template
-from connectors.cvcommander import cvc
+from connectors.cvcommander_s3 import cvcs3
 
 app = Flask(__name__,static_folder='static', template_folder='html')
 
-app.register_blueprint(cvc, url_prefix='/cvc')
+app.register_blueprint(cvcs3, url_prefix='/cvc')
 
 @app.route('/favicon.ico')
 def fav():
