@@ -1,0 +1,67 @@
+# ignore some stuff
+# no compiled files
+*.pyc
+__pycache__
+# editor swapfiles
+*.swp
+.idea/
+*.un~
+
+bin/logs/*
+
+# sass-cache
+static/css/.sass-cache/
+*.scssc
+
+# logfiles
+*.log
+# nothing from this directory either
+data/
+# personal tests that I'm working with
+tinker/
+# generated couchdb design documents
+json/out.*.json
+# python virtual environment
+venv/
+
+# ignore easylist.txt. it is needed for data but we'll download it separately
+bin/easylist.txt
+
+# ignore .DS_Store files
+.DS_Store
+
+# vim sessions
+*.vim
+
+# generated netsuite json
+bin/*.json
+bin/*.tsv
+bin/*.csv
+bin/*.txt
+*/mailchimp_results.tar.gz
+*.pkl
+
+# Redis dumps?
+dump.rdb
+
+# ipython notebooks
+.ipynb_checkpoints
+*.ipynb
+
+# vim tags
+tags
+tests/**.html
+
+# Jenkins Reports
+nosetests.html
+nosetests.xml
+
+config/*.yml
+
+# vs code
+.vscode
+.env
+
+# celery beat schedules
+celerybeat-schedule
+celerybeat.pid
