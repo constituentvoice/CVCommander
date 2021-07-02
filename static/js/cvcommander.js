@@ -50,7 +50,6 @@
 				clearSearch: 'fa-times',
 				loading: 'fa-spinner'
 			},
-			error: function(msg) { console.log(msg); },
 			file_error_timeout: 10,
 			icons: {
 				'application/postscript': 'file-pdf',
@@ -835,7 +834,7 @@
 			}
 
 			if(files.length < 1) {
-				return self.options.error('No files were selected for upload');
+				return ('No files were selected for upload');
 			}
 
 			let fd = new FormData();
@@ -871,7 +870,9 @@
 				data: fd,
 				success: callback_success,
 				error: function(jqXHR, txtstatus, err) {
-					self.options.error(txtstatus, err);
+					console.log(err);
+					txtstatus = txtstatus || 'Unknown';
+					self.cvc_alert($(self.frame).find('.cvc-modal-body'), 'Error: ' + txtstatus)
 				}
 			})
 		},
@@ -1004,8 +1005,10 @@
 			let $fname_sel = $(obj).find('.cvc-f-name');
 			let fname = $fname_sel.text();
 			const reset_input = function(name) {
+				self.renaming = false;
 				$fname_sel.empty().text(name || fname);
 			};
+			self.renaming = true;
 			$fname_sel.empty().append(
 				$('<input>').attr({name: 'new-name', type: 'text'}).val(fname).on('blur', function(e) {
 					e.preventDefault();
@@ -1018,6 +1021,7 @@
 							data: JSON.stringify({file_data: $(obj).data('icon_data'), new_name: $(this).val()}),
 							error: function (jqxhr, textstatus, err) {
 								console.log(err);
+								reset_input();
 								self.cvc_alert($(self.frame).find('.cvc-modal-body'), textstatus);
 							},
 							method: 'POST',
@@ -1026,6 +1030,7 @@
 									reset_input(output.new_name);
 									self.select(obj, output.link);
 								} else {
+									reset_input();
 									self.cvc_alert($(self.frame).find('.cvc-modal-body'),
 										output.message || 'Unable to rename file.');
 								}
@@ -1033,6 +1038,7 @@
 						})
 					}
 				}).on('keyup', function(e) {
+					e.preventDefault();
 					if(e.which === 13) {  // Enter
 						$(this).trigger('blur');
 					}
@@ -1399,36 +1405,37 @@
 
 				// keyboard events
 				$(document).on('keydown', function(e) {
-					if(self.selected) {
-						if (e.which === 67 && (e.metaKey || e.ctrlKey)) {
-							self.copy(self.selected);
-						} else if(e.which === 13) {
-							if(self.selected.data('icon_data').type === 'dir') {
-								self.selected.trigger('click');
-							}
-							else {
-								self.view(self.selected, self.selected.data('link'));
-							}
+					if(!self.renaming) {
 
-						} else {
-							let pfile = null;
-							if (e.which === 38 || e.which === 87) { // up or W
-								pfile = self._find_select(self.selected, 'up');
-							} else if (e.which === 39 || e.which === 68) {  // right arrow or D
-								pfile = self._find_select(self.selected, 'right');
-							} else if (e.which === 40 || e.which === 83) { // down arrow or S
-								pfile = self._find_select(self.selected, 'down')
-							} else if (e.which === 37 || e.which === 65) {  // left arrow or A
-								pfile = self._find_select(self.selected, 'left')
-							}
+						if (self.selected) {
+							if (e.which === 67 && (e.metaKey || e.ctrlKey)) {
+								self.copy(self.selected);
+							} else if (e.which === 13) {
+								if (self.selected.data('icon_data').type === 'dir') {
+									self.selected.trigger('click');
+								} else {
+									self.view(self.selected, self.selected.data('link'));
+								}
 
-							if (pfile) {
-								self.select(pfile, pfile.data('link'))
+							} else {
+								let pfile = null;
+								if (e.which === 38 || e.which === 87) { // up or W
+									pfile = self._find_select(self.selected, 'up');
+								} else if (e.which === 39 || e.which === 68) {  // right arrow or D
+									pfile = self._find_select(self.selected, 'right');
+								} else if (e.which === 40 || e.which === 83) { // down arrow or S
+									pfile = self._find_select(self.selected, 'down')
+								} else if (e.which === 37 || e.which === 65) {  // left arrow or A
+									pfile = self._find_select(self.selected, 'left')
+								}
+
+								if (pfile) {
+									self.select(pfile, pfile.data('link'))
+								}
 							}
+						} else if (self.copied_file && e.which === 86 && (e.metaKey || e.ctrlKey)) {
+							self.paste(self.current_folder);
 						}
-					}
-					else if(self.copied_file && e.which === 86 && (e.metaKey || e.ctrlKey)) {
-						self.paste(self.current_folder);
 					}
 				});
 
