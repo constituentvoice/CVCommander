@@ -21,7 +21,6 @@ cvcs3 = Blueprint('cvc', __name__, template_folder=tmpl_path)
 s3 = boto3.client('s3')
 
 
-# TODO figure out the best way to get these config items
 def get_cvc_config():
     return {
         'bucket': g.cvc_bucket or current_app.config.get('CVC_S3_DEFAULT_BUCKET'),

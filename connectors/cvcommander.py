@@ -8,29 +8,38 @@ import os
 from flask import (
     Blueprint,
     jsonify,
-    render_template,
     request,
     current_app,
     url_for,
-    abort
-    )
+    abort,
+    g
+)
 
-tmpl_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'html' )
-static_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir, 'static' )
-cvc = Blueprint('cvc',__name__,template_folder=tmpl_path, static_folder=static_path )
+
+def get_cvc_config():
+    upload_folder = g.cvc_upload_folder or current_app.config.get('CVC_UPLOAD_FOLDER')
+    return {
+        'upload_folder': upload_folder,
+        'search_path': os.path.join(current_app.config.get('CVC_STATIC_PATH'), upload_folder),
+        'max_copies': int(current_app.config.get('CVC_MAX_COPIES')) or 8
+    }
+
+
+cvc = Blueprint('cvc', __name__, static_folder=current_app.config.get('CVC_STATIC_PATH'))
 
 
 @cvc.route('/list', methods=['GET'])
 def list_files():
+    cfg = get_cvc_config()
     path = request.args.get('path', '')
-    search_path = os.path.join('static', 'uploads')
+    search_path = cfg.get('search_path')
     if path and path != '/':
         search_path = os.path.join(search_path, path)
 
     files = os.listdir(search_path)
     files_out = []
     for f in files:
-        path_args = ['static', 'uploads']
+        path_args = [search_path]
         full_path = f
         if path and path != '/':
             path_args.append(path)
@@ -41,7 +50,7 @@ def list_files():
         size = os.path.getsize(f_full_path)
         modified = os.path.getmtime(f_full_path)
         f_out = {
-            'url': url_for('static', filename=os.path.join('uploads', full_path), _external=True),
+            'url': url_for('static', filename=os.path.join(cfg.get('upload_folder'), full_path), _external=True),
             'name': f,
             'size': size,
             'modified': int(modified),
@@ -61,6 +70,7 @@ def list_files():
 
 @cvc.route('/upload', methods=['POST'])
 def upload_file():
+    cfg = get_cvc_config()
     path = request.args.get('path')
     try:
         output_data = []
@@ -71,7 +81,7 @@ def upload_file():
                 continue
 
             filename = secure_filename(f.filename)
-            path_args = ['static', 'uploads']
+            path_args = [cfg.get('search_path')]
             if path and path != '/':
                 path_args.append(path)
 
@@ -80,7 +90,8 @@ def upload_file():
 
             path_args.append(filename)
             f.save(os.path.join(*path_args))
-            output_data.append(url_for('static', filename='uploads/' + filename, _external=True))
+            output_data.append(url_for('static', filename=os.path.join(cfg.get('upload_folder'), filename),
+                                       _external=True))
             return jsonify({'files': output_data})
     except:
         current_app.logger.debug(format_exc())
@@ -95,7 +106,8 @@ def create_folder():
     if path and path != '/':
         folder = os.path.join(path, folder)
 
-    full_path = os.path.join('static', 'uploads', folder)
+    cfg = get_cvc_config()
+    full_path = os.path.join(cfg.get('search_path'), folder)
 
     try:
         os.mkdir(full_path)
@@ -117,12 +129,12 @@ def copy_file():
     else:
         new_path = filename
         dest = ''
-
-    new_full_path = os.path.join('static', 'uploads', new_path)
-    old_full_path = os.path.join('static', 'uploads', file_data.get('full_path'))
+    cfg = get_cvc_config()
+    new_full_path = os.path.join(cfg.get('search_path'), new_path)
+    old_full_path = os.path.join(cfg.get('search_path'), file_data.get('full_path'))
 
     count = 0
-    while count < 8 and os.path.exists(new_full_path):
+    while count < cfg.get('max_copies') and os.path.exists(new_full_path):
         count += 1
         if count > 1:
             final_file = f'Copy_{count}_of_{filename}'
@@ -134,9 +146,9 @@ def copy_file():
         else:
             new_path = final_file
 
-        new_full_path = os.path.join('static', 'uploads', new_path)
+        new_full_path = os.path.join(cfg.get('search_path'), new_path)
 
-    if count >= 8:
+    if count >= cfg.get('max_copies'):
         output = {'status': 'error', 'message': 'Too many copies!'}
     else:
         try:
@@ -153,11 +165,15 @@ def copy_file():
 @cvc.route('/rename', methods=['POST'])
 def rename_file():
     data = request.get_json()
+    cfg = get_cvc_config()
+
     file_data = data.get('file_data')
     new_name = secure_filename(data.get('new_name'))
+
     # get rid of paths. They arent valid
     new_name = os.path.basename(new_name)
-    old_full_path = os.path.join('static', 'uploads', file_data.get('full_path'))
+
+    old_full_path = os.path.join(cfg.get('search_path'), file_data.get('full_path'))
     new_name_path = os.path.join(os.path.dirname(old_full_path), new_name)
     web_path = os.path.basename(file_data.get('full_path'))
     if os.path.exists(new_name_path):
@@ -165,7 +181,8 @@ def rename_file():
     else:
         try:
             os.rename(old_full_path, new_name_path)
-            output = {'status': 'OK', 'link': url_for('static', filename=os.path.join('uploads', web_path, new_name),
+            output = {'status': 'OK', 'link': url_for('static', filename=os.path.join(cfg.get('upload_folder'),
+                                                                                      web_path, new_name),
                                                       _external=True), 'new_name': new_name}
         except (IOError, OSError):
             output = {'status': 'error', 'message': 'Unable to rename the file'}
@@ -175,8 +192,9 @@ def rename_file():
 @cvc.route('/remove', methods=['DELETE'])
 def remove():
     data = request.get_json()
+    cfg = get_cvc_config()
     file_data = data.get('file_data')
-    path = os.path.join('static', 'uploads', file_data.get('full_path'))
+    path = os.path.join(cfg.get('search_path'), file_data.get('full_path'))
     if os.path.exists(path):
         try:
             os.unlink(path)
