@@ -840,7 +840,7 @@
 			let fd = new FormData();
 			let total_size = 0;
 			$.each(files, function(idx, f) {
-				fd.append( self.upload_field, f )
+				fd.append( self.options.upload_field, f )
 				total_size += f.size;
 			});
 
