@@ -25,7 +25,8 @@ def get_cvc_config():
     return {
         'bucket': g.cvc_bucket or current_app.config.get('CVC_S3_DEFAULT_BUCKET'),
         'bucket_prefix': g.cvc_bucket_prefix or current_app.config.get('CVC_S3_BUCKET_PREFIX'),
-        'bucket_url': g.cvc_bucket_url or current_app.config.get('CVC_S3_BUCKET_URL')
+        'bucket_url': g.cvc_bucket_url or current_app.config.get('CVC_S3_BUCKET_URL'),
+        'max_copies': g.cvc_max_copies or current_app.config.get('CVC_MAX_COPIES')
     }
 
 
@@ -213,7 +214,7 @@ def copy_file():
 
     count = 0
 
-    while count < 8 and s3_exists(new_full_path):
+    while count < cvc.get('max_copies') and s3_exists(new_full_path):
         count += 1
         if count > 1:
             final_file = f'Copy_{count}_of_{filename}'
@@ -227,7 +228,7 @@ def copy_file():
 
         new_full_path = os.path.join(cvc.get('bucket_prefix'), new_path)
 
-    if count >= 8:
+    if count >= cvc.get('max_copies'):
         output = {'status': 'error', 'message': 'Too many copies!'}
     else:
         try:

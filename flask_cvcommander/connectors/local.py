@@ -15,13 +15,15 @@ from flask import (
     g
 )
 
+__all__ = ['cvc']
+
 
 def get_cvc_config():
     upload_folder = g.cvc_upload_folder or current_app.config.get('CVC_UPLOAD_FOLDER')
     return {
         'upload_folder': upload_folder,
         'search_path': os.path.join(current_app.config.get('CVC_STATIC_PATH'), upload_folder),
-        'max_copies': int(current_app.config.get('CVC_MAX_COPIES')) or 8
+        'max_copies': g.cvc_max_copies or int(current_app.config.get('CVC_MAX_COPIES'))
     }
 
 
