@@ -65,3 +65,6 @@ config/*.yml
 # celery beat schedules
 celerybeat-schedule
 celerybeat.pid
+
+# uploads
+static/uploads*

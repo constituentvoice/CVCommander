@@ -18,6 +18,7 @@
 			modal_css: null,
 			button_class: 'btn btn-light',
 			button_text: '',
+			render_browse: true,
 			fa_version: 5,
 			bs_version: 4,
 			fa_variant: 'free',
@@ -72,6 +73,11 @@
 				'^video\/': 'file-video',
 				'^audio\/': 'file-audio',
 				'dir': 'folder'
+			},
+			events: {
+				'cvc.useFile': function(e, data) {
+					data.cvc.$elem.val(data.file);
+				}
 			}
 		};
 
@@ -94,7 +100,7 @@
 		this._name = plugin_name;
 		this.config = config;
 		this._fa_base_class = "fa";
-		this._fa_variants = {free: 'fas', regular: 'far', light: 'fal', duotone: 'fad'};
+		this._fa_variants = {free: 'fas', regular: 'far', light: 'fal', duotone: 'fad', solid: 'fas'};
 		this.cached_files = [];
 
 	};
@@ -108,9 +114,13 @@
 			}
 
 			this.$elem = $(this.element);
-			this.$elem.wrap($('<div>').addClass("cvcinput input-group"));
-			this.$elem.parent().wrap($('<div>').addClass("cvccontainer"));
-			this.$drop_container = this.$elem.parent().parent();
+
+			if(this.options.render_browse) {
+				this.$elem.wrap($('<div>').addClass("cvcinput input-group"));
+				this.$elem.parent().wrap($('<div>').addClass("cvccontainer"));
+				this.$drop_container = this.$elem.parent().parent();
+			}
+
 			if(this.options.fa_version > 4) {
 				this._fa_base_class = this._fa_variants[this.options.fa_variant];
 			}
@@ -349,30 +359,35 @@
 			this.frame_html = $frame;
 
 			/* create button */
-			let button = $('<button />');
-			button.attr('type', "button");
-			button.addClass(this.options.button_class);
-			
-			let _markup = '';
-			if( this.options.fa_icons.openCommander ) {
-				_markup += '<i class="' + this._fa_base_class + ' ' + this.options.fa_icons.openCommander + '"></i>';
-				if( this.options.button_text ) {
-					_markup += " ";
+			if(this.options.render_browse) {
+				let button = $('<button />');
+				button.attr('type', "button");
+				button.addClass(this.options.button_class);
+
+				let _markup = '';
+				if (this.options.fa_icons.openCommander) {
+					_markup += '<i class="' + this._fa_base_class + ' ' + this.options.fa_icons.openCommander + '"></i>';
+					if (this.options.button_text) {
+						_markup += " ";
+					}
 				}
-			}
 
-			let self = this;
-			_markup += this.options.button_text;
-			if( _markup ) {
-				button.html(_markup)
-			}
+				let self = this;
+				_markup += this.options.button_text;
+				if (_markup) {
+					button.html(_markup)
+				}
 
-			button.on('click', function(e) {
-				e.preventDefault();
-				self.open_browser();
-			});
-			button.wrap('<span class="input-group-btn">');
-			this.$elem.after( button.parent() );
+				button.on('click', function (e) {
+					e.preventDefault();
+					self.open_browser();
+				});
+				button.wrap('<span class="input-group-btn">');
+				this.$elem.after(button.parent());
+			}
+			else {
+				this.options.allow_inline_drop = false; // disable because there's nothing to drop to
+			}
 
 			if(this.options.allow_inline_drop) {
 				this.$drop_container.append(
@@ -846,6 +861,12 @@
 
 			$('.cvcdropmessage').hide();
 			$('.cvcprogress').show();
+
+			// fix current_folder possibly not being defined if called externally
+			if(!self.current_folder) {
+				self.current_folder = '/'
+			}
+
 			$.ajax( {
 				xhr: function() {
 					let xhrobj = new window.XMLHttpRequest();
@@ -1169,7 +1190,10 @@
 			$('.cvc-selected').removeClass('cvc-selected');  // deslect the file
 			this.frame.find('.cvc-view-file').empty().hide();
 			this.list(this.current_folder || '/')
-			this.$elem.val(file);
+			// this.$elem.val(file);
+			console.log(this.frame);
+			this.frame.trigger('cvc.useFile', {file: file, filedom: obj, cvc: this});
+
 			this.close_browser();
 		},
 		select: function(obj, file) {
@@ -1438,6 +1462,12 @@
 						}
 					}
 				});
+
+				// custom events
+				// finally set up events
+				$.each(self.options.events, function(t, f) {
+					$(frame).on(t, f);
+				})
 
 				$(window).on('resize', function(e) {
 					// clear the context menu if it is visible
