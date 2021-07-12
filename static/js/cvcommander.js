@@ -107,6 +107,7 @@
 
 	cvCommander.prototype = {
 		init: function() {
+			let self = this;
 			this.options = $.extend( {}, defaults, this.config );
 			
 			if( this.options.file_error_timeout > -1 ) {
@@ -119,6 +120,9 @@
 				this.$elem.wrap($('<div>').addClass("cvcinput input-group"));
 				this.$elem.parent().wrap($('<div>').addClass("cvccontainer"));
 				this.$drop_container = this.$elem.parent().parent();
+			}
+			else {
+				this.$drop_container = null;
 			}
 
 			if(this.options.fa_version > 4) {
@@ -372,7 +376,6 @@
 					}
 				}
 
-				let self = this;
 				_markup += this.options.button_text;
 				if (_markup) {
 					button.html(_markup)
@@ -394,14 +397,18 @@
 					$('<div>').addClass('cvcupload-inline center text-muted').css('display', 'none').append(
 						$('<span>').addClass('cvcdropmessage').append('Drop files to upload and select'),
 						$('<div>').addClass('progress cvcprogress').css('display', 'none').append(
+							$('<div>').append($('<i>').addClass(
+								self._fa_base_class + ' ' + 'fa-spin fa-spinner'
+							), ' Uploading, please wait.'),
 							$('<div>').addClass('progress-bar progress-bar-success').attr(
 								{role: 'progressbar', 'aria-valuenow': 60, 'aria-valuemin': 0, 'aria-valuemax': 100}
 							).css('width', '0%')
 						)
 					)
 				);
-				let swap_inline = function(e, container, show_hide) {
+				let swap_inline = function(e, show_hide) {
 					_clean_event(e);
+					let container = self.$drop_container.parent();
 					let cvcinput = $(container).find('.cvcinput');
 					let cvcinline = $(container).find('.cvcupload-inline');
 
@@ -424,32 +431,31 @@
 				});
 
 				$(document).on('dragenter', '.cvccontainer', function(e) {
-					swap_inline(e, this, 'show');
+					swap_inline(e, 'show');
 				});
 
 				$(document).on('dragleave', '.cvccontainer', function(e) {
-					let container = $(e.target).closest('.cvccontainer');
 					if(e.target === this) {
-						swap_inline(e, container, 'hide');
+						swap_inline(e, 'hide');
 					}
 				});
 
 				$(document).on('dragend', function(e) {
 					// try to ensure this always closes if we're not dragging
-					swap_inline(e, '.cvcontainer', 'hide');
+					swap_inline(e,'hide');
 				});
 
 				$(document).on('drop', '.cvcupload-inline', function(e) {
 					e.preventDefault();
 					let files = e.originalEvent.dataTransfer.files;
 					let ipt = $(this).parent().find('.cvcinput');
-					ipt.show();
+
 					self.$elem.cvcommander('upload', files, function(data) {
 						$('.cvcdropmessage').show();
 						$('.cvcprogress').hide();
-						self.$elem.val(data.files[0]);
+						swap_inline(e, 'hide')
+						self.$elem.val(data.files[0]); // todo should we call usefile?
 					});
-					$(this).parent().find('.cvcupload-inline').hide();
 				});
 
 			}
