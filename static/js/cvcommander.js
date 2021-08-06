@@ -32,7 +32,7 @@
 				copyFile: 'fa-copy',
 				moveFile: 'fa-arrows-alt',
 				deleteFile: 'fa-trash-alt',
-				pasteFile: 'fa-paste',
+				pasteFile: 'fa-clipboard',
 				closeView: 'fa-window-close',
 				folder: 'fa-folder',
 				createFolder: 'fa-folder-plus',
@@ -132,12 +132,12 @@
 			if(this.options.render_browse) {
 				if (this.$elem.hasClass('form-control')) {
 					this.$elem.wrap($('<div>').addClass('cvcinput input-group'));
-					this.$elem.parent().wrap($('<div>'));
+					this.$elem.parent().wrap($('<div>').addClass('cvccontainer'));
 				} else {
 					this.$elem.wrap($('<span>').addClass('cvcinput'));
 					this.$elem.parent().wrap($('<span>').addClass('cvccontainer'));
 				}
-				this.$drop_container = this.$elem.parent().parent();
+				this.$drop_container = this.$elem.closest('.cvcinput').parent();
 			}
 			else {
 				this.$drop_container = null;
@@ -569,13 +569,18 @@
 			    icon_out_data['folder'] = icon_data.full_path
 			}
 
-			if(view_type === 'icons') {
+			if(view_type === 'icons' || view_type === 'preview') {
 				ico_cls += ' cvc-file-icon';
 
 				if(icon_config.iconClass) {
 					ico_cls += ' ' + icon_config.iconClass;
 				}
-				icon_out = $('<div>').addClass('col-md-3');
+				if(view_type === 'preview') {
+					icon_out = $('<div>').css('margin', '0 auto')
+				}
+				else {
+					icon_out = $('<div>').addClass('col-md-3');
+				}
 				let icon_inner = $('<div>').addClass(ico_cls).data(icon_out_data).css('font-size', icon_config.fontSize)
                 icon_inner.attr('title', icon_data.full_path);
 				icon_out.append(icon_inner);
@@ -591,10 +596,18 @@
 					icon_inner.append($('<i>').addClass(
 						self._fa_base_class + ' ' + icon_config.faSize + ' fa-' + icon_lg))
 				}
+				let icon_inner_classes = 'cvc-f-name cvc-f-name-font';
+				if(view_type === 'preview') {
+					icon_inner_classes += ' cvc-f-name-preview-style';
+				}
+				else {
+					icon_inner_classes += ' cvc-f-name-icon-style';
+				}
 				icon_inner.append(
 					$('<br>'),
-					$('<span>').addClass('cvc-f-name cvc-f-name-font').text(icon_data.name)
+					$('<span>').addClass(icon_inner_classes).text(icon_data.name)
 				)
+
 				if(icon_sm) {
 					icon_inner.addClass('cvc-' + icon_sm);
 				}
@@ -683,8 +696,12 @@
 		},
 		list: function(folder, refresh, options) {
 			let self = this;
+			self.frame.find('.cvc-list-content-wrapper').show();
+
+			// not sure if we need this but just in case
 			let listpane = this.frame.find('.cvc-list-content').first();
 			listpane.show();
+
 			self.toolbar.find('.cvc-file-opt').addClass('disabled');
 
 			let defaults = {
@@ -1217,7 +1234,7 @@
 		},
 		view: function(obj, file) {
 			let self = this;
-			this.frame.find('.cvc-list-content').hide();
+			this.frame.find('.cvc-list-content-wrapper').hide();
 			if($(obj).data('filedom')) {
 				obj = $(obj).data('filedom');
 			}
@@ -1232,13 +1249,13 @@
 						self.options.fa_icons.closeView, obj, file, 'preview').data('folder', self.current_folder)
 				),
 				$('<div>').addClass('center-block text-center').append(
-					this.create_icon($(obj).data('icon_data'), 'icons', {
+					this.create_icon($(obj).data('icon_data'), 'preview', {
 						maxHeight: '70%',
 						maxWidth: '70%',
 						height: 'auto',
-						faSize: 'fa-2x',
+						faSize: 'fa-3x',
 						iconClass: 'text-center',
-						fontSize: '3rem'
+						fontSize: '4rem'
 					})
 				)
 			).show();

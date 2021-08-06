@@ -23,6 +23,7 @@ label.tab-pane {
 	text-align: center;
 	border: 2px dashed #aaa;
 	padding: 1rem 0;
+	width: 100%;
 }
 
 .cvc-main-frame a.btn {
@@ -72,11 +73,14 @@ label.tab-pane {
 
 .cvc-f-name {
 	display: inline-block;
+	white-space: nowrap;
+	font-size: 14px;
+}
+
+.cvc-f-name-icon-style {
 	width: 8rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: 14px;
 }
 
 .cvc-f-name-font {
